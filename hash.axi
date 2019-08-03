@@ -34,14 +34,24 @@ PROGRAM_NAME='hash'
 #IF_NOT_DEFINED __HASH__
 #DEFINE __HASH__
 
+#include 'md5'
 #include 'sha1'
+#include 'sha256'
 
 define_function char[2048] hash(char scheme[], char data[]) {
 
-	switch(scheme) {
+	switch(lower_string(scheme)) {
+	
+		case 'md5': {
+			return md5(data);
+		}
 
 		case 'sha1': {
 			return sha1(data);
+		}
+
+		case 'sha256': {
+			return sha256(data);
 		}
 	}
 }

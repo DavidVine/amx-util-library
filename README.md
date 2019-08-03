@@ -4,7 +4,7 @@
 
 #### The amx-util-library contains various NetLinx include files and modules built to make it easier to perform numerous useful operations which might otherwise be onerous if the amx-util-library did not exist.
 
-All files are located in the one directory. This is due to the limitations of the NetLinx compiler in that the compiler cannot find a file that is in a sub-diurectory unless either that file or another file in the same sub-directory is referenced by the system.
+All files are located in the one directory. This is due to the limitations of the NetLinx compiler in that the compiler cannot find a file that is in a sub-directory unless either that file or another file in the same sub-directory is referenced by the system.
 
 All include files within the amx-util-library are fully commented to make them as easy as possible to use without having to refer to outside documentation.
 

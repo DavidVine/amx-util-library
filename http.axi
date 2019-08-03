@@ -1,167 +1,50 @@
-PROGRAM_NAME='http'
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Include: http
-// 
-// Description:
-//
-//   - This include file provides structures and functions for managing Hypertext Transfer Protocol (HTTP) as
-//     defined in RFC 2616 (see https://tools.ietf.org/html/rfc2616).
-//
-//   - The HttpMessage data type defined within the http include, along with various functions, can be used
-//     to simplify the building and parsing of HTTP protocol strings.
-//
-// Implementation:
-//
-//   - Any NetLinx program utilising the http include file must use either the INCLUDE or #INCLUDE keywords to 
-//     include the http include file within the program. While the INCLUDE and #INCLUDE keywords are both 
-//     functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE 
-//     keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
-//     for backwards compatibility).
-//
-//     E.g:
-//
-//        DEFINE_PROGRAM 'HTTP Client Demo'
-//
-//        #INCLUDE 'http'
-//
-//   - To create a HTTP message the main program needs to define a variable of type HttpMessage and then call the
-//     'httpSet' functions within the http include to build the message. The HttpMessage variable is always passed
-//     to the 'httpSet' functions as the first argument and will be updated within the function (note NetLinx is
-//     pass-by-reference).
-//
-//     E.g:
-//
-//        HttpMessage http;
-//
-//        httpSetType_Request(http);
-//        httpSetVersion(http,1.1);
-//        httpSetMethod_Get(http);
-//        httpSetResourcePath(http,'/path/file.html');
-//        httpSetHeader(http,'From','someuser@jmarshall.com');
-//        httpSetHeader(http,'User-Agent','HTTPTool/1.0');
-//
-//     When the HTTP message has been built it can easily be converted to string form as required by calling the
-//     httpToString function:
-//
-//     E.g:
-//
-//        send_string dvSocketWebServer, httpToString(http);
-//
-//     The generic httpSetHeader function can be used to set the value of any header within the HTTP message:
-//
-//     E.g:
-//
-//        httpSetHeader(http,'Connection','close');
-//
-//     And constants are provided within the http include which can be used to further reduce the likelihood of errors 
-//     from typos in the header field string:
-//
-//     E.g:
-//
-//        httpSetHeader(http,HTTP_HEADER_FIELD_CONNECTION,'close');
-//
-//     The HTTP method (PUT|GET|POST, etc...) can be set either by the generic httpSetMethod function:
-//
-//     E.g.1:
-//
-//        httpSetMethod(http,'POST');
-//
-//     E.g.2:
-//
-//        httpSetMethod(http,HTTP_METHOD_POST);
-//
-//     Or through the use of specific httpSetMethod_ functions:
-//
-//     E.g:
-//
-//        httpSetMethod_Post(http);
-//
-//
-//   - To parse a received HTTP message create a HttpMessage variable and pass it and the data received on the TCP/IP
-//     socket to the httpFromString function:
-//
-//     E.g:
-//
-//        DATA_EVENT[dvSocketWebServer]
-//        {
-//           STRING:
-//           {
-//              HttpMessage http;
-//              httpFromString(http,data.text);
-//
-//     The HttpMessage variable will now contain all the information specified within the HTTP string and can be
-//     easily searched using the various httpGet methods defined within the http include.
-//
-//     E.g:
-//
-//        httpGetType(http) // returns character string as either 'Request' or 'Response'
-//        httpGetStatusCode(http) // returns integer containing status code (e.g., 401)
-//        httpGetReasonPhrase(http) // returns character string containing reason phrase (e.g., 'Bad Request')
-//
-//     HTTP header values can be searched for using the httpGetHeader function:
-//
-//     E.g.1:
-//
-//        strStatus = httpGetHeader(http,'Status') // returns character string containing value of Status header field (e.g., '200 OK')
-//
-//     E.g.2:
-//
-//        strLocation = httpGetHeader(http,HTTP_HEADER_FIELD_LOCATION) // returns character string containing value of Location header field (e.g., 'http://www.w3.org/pub/WWW/People.html')
-//
-//     NOTE: HTTP (as defined in RFC 2616) defines seperate header fields for HTTP response and HTTP request messages.
-//     All header field constant identifiers within the http include are prefixed with 'HTTP_HEADER_FIELD_' however
-//     they are seperated into two-commented groups clearly identifying which values relate to response messages and
-//     which relate to request messages.
-//
-//   - The printHttp function is provided for troubleshooting. Calling this function and passing a HttpMessage variable
-//     through will cause the NetLinx master to print the contents of the HttpMessage as a HTTP string in Diagnostics.
-//
-//     E.g:
-//
-//        printHttp(http);
-//
-//
-//   - To aid in reusability a HttpMessage variable can be reset at any time by calling the httpClear function:
-
-//     E.g:
-//
-//        httpClear(http);
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#IF_NOT_DEFINED __HTTP__
-#DEFINE __HTTP__
+program_name='http'
 
 
-#include 'dictionary'
-#include 'string'
+#if_not_defined __HTTP__
+#define __HTTP__
+
+
+#include 'base64.axi'
+#include 'md5.axi'
 #include 'uri'
 
 
-DEFINE_CONSTANT
+define_constant
 
-long HTTP_MAX_SIZE_MESSAGE_BODY = 65535 //99999999; - takes 20 seconds to compile //1073741824; - 1MB takes extremely long time to compile
+HTTP_MAX_MESSAGE_LENGTH = 65535
+HTTP_MAX_BODY_LENGTH    = 65535
 
 
-DEFINE_TYPE
+define_type
 
-STRUCT HttpMessage {
-	char type[8];            // is this a 'request' or 'response' message?
-	// Initial Line
-	float version;          // request and response
-	char method[10];        // request only
-	char resourcePath[200]; // request only
-	integer statusCode;     // response only
-	char reasonPhrase[100]; // response only
-	// Header Lines
-	Dictionary headers; // request and response
-	// Message Body
-	char body[HTTP_MAX_SIZE_MESSAGE_BODY];	// request and response
+struct HttpHeader {
+    char name[100];
+    char value[1024];
+}
+
+struct HttpRequest {
+    float version;
+    char method[10];
+    char target[200];
+    HttpHeader headers[20];
+    char body[HTTP_MAX_BODY_LENGTH];
+}
+
+struct HttpStatus {
+    integer code;
+    char message[100];
+}
+
+struct HttpResponse {
+    float version;
+    HttpStatus status;
+    HttpHeader headers[20];
+    char body[HTTP_MAX_BODY_LENGTH];
 }
 
 
-DEFINE_CONSTANT
+define_constant
 
 char HTTP_VERSION_1_0[] = 'HTTP/1.0';
 char HTTP_VERSION_1_1[] = 'HTTP/1.1';
@@ -169,6 +52,8 @@ char HTTP_VERSION_1_1[] = 'HTTP/1.1';
 // Informational Status Codes
 integer HTTP_STATUS_CODE_CONTINUE            = 100; // Only a part of the request has been received by the server, but as long as it has not been rejected, the client should continue with the request.
 integer HTTP_STATUS_CODE_SWITCHING_PROTOCOLS = 101; // The server switches protocol.
+integer HTTP_STATUS_CODE_PROCESSING          = 102; // 
+integer HTTP_STATUS_CODE_EARLY_HINTS         = 103; // 
 
 // Successful Status Codes
 integer HTTP_STATUS_CODE_OK                            = 200; // The request is OK.
@@ -178,6 +63,9 @@ integer HTTP_STATUS_CODE_NON_AUTHORITATIVE_INFORMATION = 203; // The information
 integer HTTP_STATUS_CODE_NO_CONTENT                    = 204; // A status code and a header are given in the response, but there is no entity-body in the reply.
 integer HTTP_STATUS_CODE_RESET_CONTENT                 = 205; // The browser should clear the form used for this transaction for additional input.
 integer HTTP_STATUS_CODE_PARTIAL_CONTENT               = 206; // The server is returning partial data of the size requested. Used in response to a request specifying a Range header. The server must specify the range included in the response with the Content-Range header.
+integer HTTP_STATUS_CODE_MULTI_STATUS                  = 207;
+integer HTTP_STATUS_CODE_ALREADY_REPORTED              = 208;
+integer HTTP_STATUS_CODE_IM_USED                       = 226;
 
 // Redirection Status Codes
 integer HTTP_STATUS_CODE_MULTIPLE_CHOICES   = 300; // A link list. The user can select a link and go to that location. Maximum five addresses.
@@ -188,35 +76,53 @@ integer HTTP_STATUS_CODE_NOT_MODIFIED       = 304; // This is the response code 
 integer HTTP_STATUS_CODE_USE_PROXY          = 305; // The requested URL must be accessed through the proxy mentioned in the Location header.
 integer HTTP_STATUS_CODE_UNUSED             = 306; // This code was used in a previous version. It is no longer used, but the code is reserved.
 integer HTTP_STATUS_CODE_TEMPORARY_REDIRECT = 307; // The requested page has moved temporarily to a new url.
+integer HTTP_STATUS_CODE_PERMANENT_REDIRECT = 308; // 
 
 // Client Error Status Codes
-integer HTTP_STATUS_CODE_BAD_REQUEST                   = 400; // The server did not understand the request.
-integer HTTP_STATUS_CODE_UNAUTHORIZED                  = 401; // The requested page needs a username and a password.
-integer HTTP_STATUS_CODE_PAYMENT_REQUIRED              = 402; // You can not use this code yet.
-integer HTTP_STATUS_CODE_FORBIDDEN                     = 403; // Access is forbidden to the requested page.
-integer HTTP_STATUS_CODE_NOT_FOUND                     = 404; // The server can not find the requested page.
-integer HTTP_STATUS_CODE_METHOD_NOT_ALLOWED            = 405; // The method specified in the request is not allowed.
-integer HTTP_STATUS_CODE_NOT_ACCEPTABLE                = 406; // The server can only generate a response that is not accepted by the client.
-integer HTTP_STATUS_CODE_PROXY_AUTHENTICATION_REQUIRED = 407; // You must authenticate with a proxy server before this request can be served.
-integer HTTP_STATUS_CODE_REQUEST_TIMEOUT               = 408; // The request took longer than the server was prepared to wait.
-integer HTTP_STATUS_CODE_CONFLICT                      = 409; // The request could not be completed because of a conflict.
-integer HTTP_STATUS_CODE_GONE                          = 410; // The requested page is no longer available.The "Content-Length" is not defined. The server will not accept the request without it.
-integer HTTP_STATUS_CODE_LENGTH_REQUIRED               = 411; // The "Content-Length" is not defined. The server will not accept the request without it.
-integer HTTP_STATUS_CODE_PRECONDITION_FAILED           = 412; // The pre condition given in the request evaluated to false by the server.
-integer HTTP_STATUS_CODE_REQUEST_ENTITY_TOO_LARGE      = 413; // The server will not accept the request, because the request entity is too large.
-integer HTTP_STATUS_CODE_REQUEST_URL_TOO_LONG          = 414; // The server will not accept the request, because the url is too long. Occurs when you convert a "post" request to a "get" request with a long query information.
-integer HTTP_STATUS_CODE_UNSUPPORTED_MEDIA_TYPE        = 415; // The server will not accept the request, because the mediatype is not supported.
-integer HTTP_STATUS_CODE_REQUEST_RANGE_NOT_SATISFIED   = 416; // The requested byte range is not available and is out of bounds.
-integer HTTP_STATUS_CODE_EXPECTATION_FAILED            = 417; // The expectation given in an Expect request-header field could not be met by this server.
+integer HTTP_STATUS_CODE_BAD_REQUEST                        = 400; // The server did not understand the request.
+integer HTTP_STATUS_CODE_UNAUTHORIZED                       = 401; // The requested page needs a username and a password.
+integer HTTP_STATUS_CODE_PAYMENT_REQUIRED                   = 402; // You can not use this code yet.
+integer HTTP_STATUS_CODE_FORBIDDEN                          = 403; // Access is forbidden to the requested page.
+integer HTTP_STATUS_CODE_NOT_FOUND                          = 404; // The server can not find the requested page.
+integer HTTP_STATUS_CODE_METHOD_NOT_ALLOWED                 = 405; // The method specified in the request is not allowed.
+integer HTTP_STATUS_CODE_NOT_ACCEPTABLE                     = 406; // The server can only generate a response that is not accepted by the client.
+integer HTTP_STATUS_CODE_PROXY_AUTHENTICATION_REQUIRED      = 407; // You must authenticate with a proxy server before this request can be served.
+integer HTTP_STATUS_CODE_REQUEST_TIMEOUT                    = 408; // The request took longer than the server was prepared to wait.
+integer HTTP_STATUS_CODE_CONFLICT                           = 409; // The request could not be completed because of a conflict.
+integer HTTP_STATUS_CODE_GONE                               = 410; // The requested page is no longer available.The "Content-Length" is not defined. The server will not accept the request without it.
+integer HTTP_STATUS_CODE_LENGTH_REQUIRED                    = 411; // The "Content-Length" is not defined. The server will not accept the request without it.
+integer HTTP_STATUS_CODE_PRECONDITION_FAILED                = 412; // The pre condition given in the request evaluated to false by the server.
+integer HTTP_STATUS_CODE_REQUEST_ENTITY_TOO_LARGE           = 413; // The server will not accept the request, because the request entity is too large.
+integer HTTP_STATUS_CODE_REQUEST_URL_TOO_LONG               = 414; // The server will not accept the request, because the url is too long. Occurs when you convert a "post" request to a "get" request with a long query information.
+integer HTTP_STATUS_CODE_UNSUPPORTED_MEDIA_TYPE             = 415; // The server will not accept the request, because the mediatype is not supported.
+integer HTTP_STATUS_CODE_REQUEST_RANGE_NOT_SATISFIED        = 416; // The requested byte range is not available and is out of bounds.
+integer HTTP_STATUS_CODE_EXPECTATION_FAILED                 = 417; // The expectation given in an Expect request-header field could not be met by this server.
+integer HTTP_STATUS_CODE_IM_A_TEAPOT                        = 418;
+integer HTTP_STATUS_CODE_MISDIRECTED_REQUEST                = 421;
+integer HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY               = 422;
+integer HTTP_STATUS_CODE_LOCKED                             = 423;
+integer HTTP_STATUS_CODE_FAILED_DEPENDENCIES                = 424;
+integer HTTP_STATUS_CODE_UPGRADE_REQUIRED                   = 426;
+integer HTTP_STATUS_CODE_PRECONDITION_REQUIRED              = 428;
+integer HTTP_STATUS_CODE_TOO_MANY_REQUESTS                  = 429;
+integer HTTP_STATUS_CODE_REQUEST_HEADER_FIELDS_TOO_LARGE    = 431;
+integer HTTP_STATUS_CODE_CONNECTION_CLOSED_WITHOUT_RESPONSE = 444;
+integer HTTP_STATUS_CODE_UNAVAILABLE_FOR_LEGAL_REASONS      = 451;
+integer HTTP_STATUS_CODE_CLIENT_CLOSED_REQUEST              = 499;
 
 // Server Error
-integer HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR      = 500; // The request was not completed. The server met an unexpected condition.
-integer HTTP_STATUS_CODE_NOT_IMPLEMENTED            = 501; // The request was not completed. The server did not support the functionality required.
-integer HTTP_STATUS_CODE_BAD_GATEWAY                = 502; // The request was not completed. The server received an invalid response from the upstream server.
-integer HTTP_STATUS_CODE_SERVICE_UNAVAILABLE        = 503; // The request was not completed. The server is temporarily overloading or down.
-integer HTTP_STATUS_CODE_GATEWAY_TIMEOUT            = 504; // The gateway has timed out.
-integer HTTP_STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED = 505; // The server does not support the "http protocol" version.
-
+integer HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR           = 500; // The request was not completed. The server met an unexpected condition.
+integer HTTP_STATUS_CODE_NOT_IMPLEMENTED                 = 501; // The request was not completed. The server did not support the functionality required.
+integer HTTP_STATUS_CODE_BAD_GATEWAY                     = 502; // The request was not completed. The server received an invalid response from the upstream server.
+integer HTTP_STATUS_CODE_SERVICE_UNAVAILABLE             = 503; // The request was not completed. The server is temporarily overloading or down.
+integer HTTP_STATUS_CODE_GATEWAY_TIMEOUT                 = 504; // The gateway has timed out.
+integer HTTP_STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED      = 505; // The server does not support the "http protocol" version.
+integer HTTP_STATUS_CODE_VARIANT_ALSO_NEGOTIATES         = 506;
+integer HTTP_STATUS_CODE_INSUFFICIENT_STORAGE            = 507;
+integer HTTP_STATUS_CODE_LOOP_DETECTED                   = 508;
+integer HTTP_STATUS_CODE_NOT_EXTENDED                    = 510;
+integer HTTP_STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED = 511;
+integer HTTP_STATUS_CODE_NETWORK_CONNECT_TIMEOUT_ERROR   = 599;
 
 // HTTP Header Fields(Request fields)
 char HTTP_HEADER_FIELD_ACCEPT              [] = 'Accept';	            // Accept: text/plain
@@ -249,7 +155,7 @@ char HTTP_HEADER_FIELD_RANGE               [] = 'Range';               // Range:
 char HTTP_HEADER_FIELD_REFERER             [] = 'Referer';             // Referer: http://en.wikipedia.org/wiki/Main_Page
 char HTTP_HEADER_FIELD_TE                  [] = 'TE';                  // TE: trailers, deflate
 char HTTP_HEADER_FIELD_UPGRADE             [] = 'Upgrade';             // Upgrade: HTTP/2.0, HTTPS/1.3, IRC/6.9, RTA/x11
-char HTTP_HEADER_FIELD_USER_ANGENT         [] = 'User-Agent';          // User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/21.0
+char HTTP_HEADER_FIELD_USER_AGENT          [] = 'User-Agent';          // User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/21.0
 char HTTP_HEADER_FIELD_VIA                 [] = 'Via';                 // Via: 1.0 fred, 1.1 example.com (Apache/1.1)
 char HTTP_HEADER_FIELD_WARNING             [] = 'Warning';             // Warning: 199 Miscellaneous warning
 
@@ -296,7 +202,7 @@ char HTTP_HEADER_FIELD_VARY                        [] = 'Vary'; // Vary: *     |
 char HTTP_HEADER_FIELD_WWW_AUTHENTICATE            [] = 'WWW-Authenticate'; // WWW-Authenticate: Basic
 char HTTP_HEADER_FIELD_X_FRAME_OPTIONS             [] = 'X-Frame-Options'; // X-Frame-Options: deny
 
-
+// HTTP Methods
 char HTTP_METHOD_PUT[]     = 'PUT';
 char HTTP_METHOD_GET[]     = 'GET';
 char HTTP_METHOD_POST[]    = 'POST';
@@ -307,427 +213,320 @@ char HTTP_METHOD_OPTIONS[] = 'OPTIONS';
 char HTTP_METHOD_CONNECT[] = 'CONNECT';
 char HTTP_METHOD_PATCH[]   = 'PATCH';
 
-DEFINE_VARIABLE
 
-
-Dictionary httpSafeCharacterDict;
+/*
+HTTP String Specific Functions
+*/
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpSetType_Request
+// Function: httpParseResponse
 //
 // Parameters:
-//    HttpMessage message   -   A HTTP message object
+//    HttpResponse response   -   HTTP response object which will store the parsed HTTP response
+//    char buffer[]           -   buffer containing the HTTP response to parse
 //
 // Returns:
-//    nothing
+//    integer   - true or false value indicating whether HTTP response was parsed successfully
 //
 // Description:
-//    Sets the type of the HTTP message object to 'request'. Note that this is not a field in a HTTP string but rather
-//    an indication for the program to know where the message came from (Client) and how it is formatted in string form
+//    Parses a HTTP response from a character buffer. Returns a true or false value indicating success or failure.
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetType_Request(HttpMessage message) {
-	message.type = 'request';
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpSetType_Response
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the type of the HTTP message object to 'response'. Note that this is not a field in a HTTP string but rather
-//    an indication for the program to know where the message came from (Server) and how it is formatted in string form
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetType_Response(HttpMessage message) {
-	message.type = 'response';
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpGetType
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    CHAR[8]   -   A character array containing the type of HTTP message ('request' | 'response').
-//
-// Description:
-//    Returns a character array containing the type of HTTP message from the HTTP message object. Note that this is not
-//    a field in a HTTP string but rather an indication for the program to know where the message came from. A return
-//    value of 'request' will indicate that HTTP message is from a HTTP client while a return value of 'response' will
-//    indicate that the HTTP message is from a HTTP Server.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION char[8] httpGetType(HttpMessage message) {
-	return message.type;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpSetVersion
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//    float version         -   A float value containing a HTTP version
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the HTTP version in the HTTP message object.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetVersion(HttpMessage message, float version) {
-	message.version = version;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpGetVersion
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    float   -   A float containing the HTTP version.
-//
-// Description:
-//    Returns a float containing the HTTP version from the HTTP message object
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION float httpGetVersion(HttpMessage message) {
-	return message.version;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpSetStatuscode
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//    integer statusCode    -   An integer value containing a HTTP status code
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the status code in the HTTP message object.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetStatuscode(HttpMessage message, integer statusCode) {
-	message.statusCode = statusCode;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpGetStatusCode
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    integer   -   An integer containing the HTTP status code.
-//
-// Description:
-//    Returns an integer containing the HTTP status code from the HTTP message object
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION integer httpGetStatusCode(HttpMessage message) {
-	return message.statusCode;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpSetReasonPhrase
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//    char reasonPhrase[]   -   A character array (string) of undetermined length
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the reason phrase in the HTTP message object.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetReasonPhrase(HttpMessage message, char reasonPhrase[]) {
-	message.reasonPhrase = reasonPhrase;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpGetReasonPhrase
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    CHAR[100]   -   A character array containing the reason phrase.
-//
-// Description:
-//    Returns a character array containing the reason phrase from the HTTP message object
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION char[100] httpGetReasonPhrase(HttpMessage message) {
-	return message.reasonPhrase;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpSetMethod
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//    char method[]         -   A character array (string) of undetermined length
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the method in the HTTP message object. Only valid HTTP methods are allowed (GET|HEAD|POST|PUT|DELETE|TRACE|
-//    OPTIONS|CONNECT|PATCH)
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetMethod(HttpMessage message, char method[]) {
-	switch(UPPER_STRING(method)) {
-		case HTTP_METHOD_GET:
-		case HTTP_METHOD_HEAD:
-		case HTTP_METHOD_POST:
-		case HTTP_METHOD_PUT:
-		case HTTP_METHOD_DELETE:
-		case HTTP_METHOD_TRACE:
-		case HTTP_METHOD_OPTIONS:
-		case HTTP_METHOD_CONNECT:
-		case HTTP_METHOD_PATCH:
-			message.method = UPPER_STRING(method);
+define_function integer httpParseResponse(HttpResponse response, char buffer[]) {
+	char workingBuffer[HTTP_MAX_MESSAGE_LENGTH];
+	char httpStatusLine[1024];
+	char httpHeaderLines[5000];
+	HttpResponse tempResponse;
+	
+	workingBuffer = buffer;
+	
+	if(!find_string(workingBuffer,'HTTP/',1)) {
+		return false;
+	}
+	
+	remove_string(workingBuffer,'HTTP/',1);
+	
+	if(!find_string(workingBuffer,"$0d,$0a",1)) {
+		return false;
+	}
+	
+	httpStatusLine = remove_string(workingBuffer,"$0d,$0a",1);
+	httpStatusLine = left_string(httpStatusLine,length_string(httpStatusLine)-2);
+	
+	httpResponseSetVersion(tempResponse, atof(httpStatusLine));
+	
+	remove_string(httpStatusLine,' ',1);
+	httpResponseSetStatusCode(tempResponse, atoi(httpStatusLine));
+	
+	remove_string(httpStatusLine,' ',1);
+	httpResponseSetStatusMessage(tempResponse, httpStatusLine);
+	
+	if(!find_string(workingBuffer,"$0d,$0a,$0d,$0a",1)) {
+		return false;
+	}
+	
+	httpHeaderLines = remove_string(workingBuffer,"$0d,$0a,$0d,$0a",1);
+	
+	while(httpHeaderLines != "$0d,$0a") {
+		char headerLine[2000];
+		char headerName[50];
+		char headerValue[2000];
+		
+		headerLine = remove_string(httpHeaderLines,"$0d,$0a",1);
+		headerLine = left_string(headerLine,length_string(headerLine)-2);
+		headerName = remove_string(headerLine,"':'",1);
+		headerName = left_string(headerName,length_string(headerName)-1);
+		headerValue = right_string(headerLine,length_string(headerLine)-1);
+		httpResponseSetHeader(tempResponse,headerName,headerValue);
+	}
+	
+	if(httpResponseHasHeader(tempResponse,'Transfer-Encoding')) {
+		char values[20][1024];
+		integer i;
+		integer isChunked;
+		
+		httpResponseGetHeaderValues(tempResponse,'Transfer-Encoding',values);
+		
+		for(i=1; i<=length_array(values); i++) {
+		
+			if(find_string(values[i],'chunked',1)) {
+				isChunked = true;
+				
+				if(!find_string(workingBuffer,"$0D,$0A,'0',$0D,$0A,$0D,$0A",1)) {
+					return false;
+				}
+				else {
+					httpResponseSetBody(tempResponse,remove_string(workingBuffer,"$0D,$0A,'0',$0D,$0A,$0D,$0A",1));
+					httpResponseCopy(tempResponse,response);
+					buffer = right_string(buffer,length_array(workingBuffer));
+					return true;
+				}
+			}
+		}
+		
+		if(!isChunked) {
+			return false;
+		}
+	}
+	else if(httpResponseHasHeader(tempResponse,'Content-Length')) {
+		long contentLength;
+		long bytesRemainingInBuffer;
+		char values[20][1024];
+		integer i;
+		
+		httpResponseGetHeaderValues(tempResponse,'Content-Length',values);
+		contentLength = atoi(values[1]);
+		
+		if(length_array(workingBuffer)<contentLength) {
+			AMX_LOG(AMX_ERROR,"'http-alt::httpParseResponse...returning(false) - buffer does not contain enough data'");
+			return false;
+		}
+		
+		httpResponseSetBody(tempResponse,get_buffer_string(workingBuffer,contentLength));
+		httpResponseCopy(tempResponse,response);
+		buffer = right_string(buffer,length_array(workingBuffer));
+		return true;
+	}
+	else {
+		httpResponseCopy(tempResponse,response);
+		buffer = right_string(buffer,length_array(workingBuffer));
+		return true;
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpSetMethod_Get
+// Function: httpParseRequest
 //
 // Parameters:
-//    HttpMessage message   -   A HTTP message object
+//    HttpRequest request   -   HTTP request object which will store the parsed HTTP request
+//    char buffer[]         -   buffer containing the HTTP request to parse
+//
+// Returns:
+//    integer   - true or false value indicating whether HTTP request was parsed successfully
+//
+// Description:
+//    Parses a HTTP request from a character buffer. Returns a true or false value indicating success or failure.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function integer httpParseRequest(HttpRequest request, char buffer[]) {
+	#warn '@todo: implement httpParseRequest method'
+	return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestToString
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
+//
+// Returns:
+//    char[]   - HTTP request in string format
+//
+// Description:
+//    Returns a HTTP request string from the data contained in the HttpRequest object parameter
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function char[HTTP_MAX_MESSAGE_LENGTH] httpRequestToString(HttpRequest request) {
+    char http[1024];
+    integer i;
+    
+    http = "request.method,' ',uriPercentEncodeString(request.target),' HTTP/',format('%.1f',request.version),$0d,$0a"
+    
+    for(i=1; i<=length_array(request.headers); i++) {
+		http = "http,request.headers[i].name,': ',request.headers[i].value,$0d,$0a";
+    }
+    
+    http = "http,$0d,$0a";
+    
+    http = "http,request.body"
+    
+    return http;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestToDebug
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
 //
 // Returns:
 //    nothing
 //
 // Description:
-//    Sets the method in the HTTP message object to GET.
+//    Prints HTTP request to debug
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetMethod_Get(HttpMessage message) {
-	message.method = HTTP_METHOD_GET;
+define_function httpRequestToDebug(HttpRequest request) {
+    integer i;
+	
+	AMX_LOG(AMX_DEBUG,'----- BEGIN HTTP REQUEST -----');
+    
+    AMX_LOG(AMX_DEBUG,"request.method,' ',uriPercentEncodeString(request.target),' HTTP/',format('%.1f',request.version)");
+    
+    for(i=1; i<=length_array(request.headers); i++) {
+		AMX_LOG(AMX_DEBUG,"request.headers[i].name,': ',request.headers[i].value");
+    }
+    
+    AMX_LOG(AMX_DEBUG,'');
+    
+	if(length_string(request.body)) {
+		AMX_LOG(AMX_DEBUG,"request.body");
+	}
+    
+	AMX_LOG(AMX_DEBUG,'----- END HTTP REQUEST -----');
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpSetMethod_Head
+// Function: httpResponseToString
 //
 // Parameters:
-//    HttpMessage message   -   A HTTP message object
+//    HttpResponse response   -   HTTP response object
+//
+// Returns:
+//    char[]   - HTTP response in string format
+//
+// Description:
+//    Returns a HTTP response string from the data contained in the HttpResponse object parameter
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function char[HTTP_MAX_MESSAGE_LENGTH] httpResponseToString(HttpResponse response) {
+    char http[1024];
+    integer i;
+    
+    http = "'HTTP/',format('%.1f',response.version),' ',itoa(response.status.code),' ',response.status.message,$0d,$0a"
+    
+    for(i=1; i<=length_array(response.headers); i++) {
+		http = "http,response.headers[i].name,': ',response.headers[i].value,$0d,$0a";
+    }
+    
+    http = "http,$0d,$0a";
+    
+    http = "http,response.body"
+    
+    return http;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseToDebug
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
 //
 // Returns:
 //    nothing
 //
 // Description:
-//    Sets the method in the HTTP message object to HEAD.
+//    Prints HTTP response to debug
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetMethod_Head(HttpMessage message) {
-	message.method = HTTP_METHOD_HEAD;
+define_function httpResponseToDebug(HttpResponse response) {
+    integer i;
+	
+	AMX_LOG(AMX_DEBUG,'----- BEGIN HTTP RESPONSE -----');
+    
+    AMX_LOG(AMX_DEBUG,"'HTTP/',format('%.1f',response.version),' ',itoa(response.status.code),' ',response.status.message");
+    
+    for(i=1; i<=length_array(response.headers); i++) {
+		AMX_LOG(AMX_DEBUG,"response.headers[i].name,': ',response.headers[i].value");
+    }
+    
+    AMX_LOG(AMX_DEBUG,'');
+    
+	if(length_string(response.body)) {
+		AMX_LOG(AMX_DEBUG,"response.body");
+	}
+	
+	AMX_LOG(AMX_DEBUG,'----- END HTTP RESPONSE -----');
 }
+
+/*
+HTTP Header Specific Functions
+*/
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpSetMethod_Post
+// Function: httpRequestSetHeader
 //
 // Parameters:
-//    HttpMessage message   -   A HTTP message object
+//    HttpRequest request   -   HTTP request object
+//    char[] name           -   name of HTTP header
+//    char[] value          -   value of HTTP header
 //
 // Returns:
 //    nothing
 //
 // Description:
-//    Sets the method in the HTTP message object to POST.
+//    Assigns a header to a HTTP request object
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetMethod_Post(HttpMessage message) {
-	message.method = HTTP_METHOD_POST;
+define_function httpRequestSetHeader(HttpRequest request, char name[], char value[]) {
+	httpSetHeader(request.headers, name, value);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpSetMethod_Put
+// Function: httpResponseSetHeader
 //
 // Parameters:
-//    HttpMessage message   -   A HTTP message object
+//    HttpResponse response   -   HTTP response object
+//    char[] name             -   name of HTTP header
+//    char[] value            -   value of HTTP header
 //
 // Returns:
 //    nothing
 //
 // Description:
-//    Sets the method in the HTTP message object to PUT.
+//    Assigns a header to a HTTP response object
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetMethod_Put(HttpMessage message) {
-	message.method = HTTP_METHOD_PUT;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpSetMethod_Delete
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the method in the HTTP message object to DELETE.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetMethod_Delete(HttpMessage message) {
-	message.method = HTTP_METHOD_DELETE;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpSetMethod_Trace
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the method in the HTTP message object to TRACE.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetMethod_Trace(HttpMessage message) {
-	message.method = HTTP_METHOD_TRACE;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpSetMethod_Options
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the method in the HTTP message object to OPTIONS.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetMethod_Options(HttpMessage message) {
-	message.method = HTTP_METHOD_OPTIONS;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpSetMethod_Connect
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the method in the HTTP message object to CONNECT.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetMethod_Connect(HttpMessage message) {
-	message.method = HTTP_METHOD_CONNECT;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpSetMethod_Patch
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the method in the HTTP message object to PATCH.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetMethod_Patch(HttpMessage message) {
-	message.method = HTTP_METHOD_PATCH;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpGetMethod
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    CHAR[10]   -   A character array containing the HTTP method.
-//
-// Description:
-//    Returns a character array containing the HTTP method from the HTTP message object
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION char[10] httpGetMethod(HttpMessage message) {
-	return message.method;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpSetResourcePath
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//    char resourcePath[]   -   A character array (string) of undetermined length
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the resource path in the HTTP message object.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetResourcePath(HttpMessage message, char resourcePath[]) {
-	message.resourcePath = resourcePath;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpGetResourcePath
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    CHAR[200]   -   A character array containing the resource path.
-//
-// Description:
-//    Returns a character array containing the resource path from the HTTP message object
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION char[200] httpGetResourcePath(HttpMessage message) {
-	return message.resourcePath;
+define_function httpResponseSetHeader(HttpResponse response, char name[], char value[]) {
+	httpSetHeader(response.headers, name, value);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -735,359 +534,916 @@ DEFINE_FUNCTION char[200] httpGetResourcePath(HttpMessage message) {
 // Function: httpSetHeader
 //
 // Parameters:
-//    HttpMessage message      -   A HTTP message object
-//    char headerField[]    -   A character array (string) of undetermined length
-//    char value[]          -   A character array (string) of undetermined length
+//    HttpHeader[] headers   -   array of HTTP header ojects
+//    char[] name            -   name of HTTP header
+//    char[] value           -   value of HTTP header
 //
 // Returns:
 //    nothing
 //
 // Description:
-//    Sets the value of the specified header field in the HTTP message object.
+//    Adds HTTP header to array of HTTP headers. If HTTP header with matching name already exists in array the value
+//    of the existing HTTP header is overwritten.
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetHeader(HttpMessage message, char headerField[], char value[]) {
-	dictionaryAdd(message.headers,headerField,value);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpGetHeader
-//
-// Parameters:
-//    HttpMessage message      -   A HTTP message object
-//    char headerFieldName[]   -   A character array (string) of undetermined length
-//
-// Returns:
-//    CHAR[100]   -   A character array containing the value of the requested header field.
-//
-// Description:
-//    Returns a character array containing the value of the requested header field from the HTTP message object
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION char[100] httpGetHeader(HttpMessage message, char headerFieldName[]) {
-	return dictionaryGetValue(message.headers,headerFieldName);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpSetMessageBody
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//    char body[]           -   A character array (string) of undetermined length
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the body of the HTTP message object passed to the message parameter with the string value passed to the
-//    body parameter.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpSetMessageBody(HttpMessage message, char body[]) {
-	message.body = body;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpGetMessageBody
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    CHAR[HTTP_MAX_SIZE_MESSAGE_BODY]   -   A character array containing the body of the HTTP message.
-//
-// Description:
-//    Returns the body of the HTTP message object passed to the message parameter.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION char[HTTP_MAX_SIZE_MESSAGE_BODY] httpGetMessageBody(HttpMessage message) {
-	return message.body;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: printHttp
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Prints a HTTP protocol formatted string to diagnostics based on the contents of a HTTP message object passed to
-//    the message parameter. 
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function printHttp(HttpMessage message) {
-	CHAR resourcePathSafelyTyped[600];
-	stack_var integer i;
-
-	// Initial Request Line
-	if(message.type == 'request') {
-		i = 1;
-		resourcePathSafelyTyped = uriPercentEncodeString(message.resourcePath);
-		send_string 0, "message.method,' ',resourcePathSafelyTyped,' HTTP/',format('%.1f',message.version),$0D,$0A";
-	}
-	else if(message.type = 'response') {
-		send_string 0, "'HTTP/',ftoa(message.version),' ',itoa(message.statusCode),' ',message.reasonPhrase,$0D,$0A";
-	}
-	else {	// unhandled type
-		return;// "'ERROR:Unhandled HTTP message type "',message.type,'"'";
-	}
+define_function httpSetHeader(HttpHeader headers[], char name[], char value[]) {
+	integer i;
 	
-	// Header Lines
-	i = 1;
-	while(i <= length_array(message.headers.keyVals)) {
-		send_string 0, "message.headers.keyVals[i].key,': ',message.headers.keyVals[i].val,$0D,$0A";
-		i++;
-	}
-	// Blank Line
-	send_string 0, "$0D,$0A";
-
-	// Message Body
-	send_string 0, "message.body";
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpToString
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//
-// Returns:
-//    CHAR[100000]   -   A character array containing a HTTP protocol formatted string.
-//
-// Description:
-//    Returns a character array containing a HTTP protocol formatted string bases on the contents of the HttpMessage
-//    object passed to the message parameter.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION CHAR[100000] httpToString(HttpMessage message) {
-	CHAR http[100000];
-	CHAR resourcePathSafelyTyped[600];
-	stack_var integer i;
-
-	// Initial Request Line
-	if(message.type == 'request') {
-		i = 1;
-		resourcePathSafelyTyped = uriPercentEncodeString(message.resourcePath);
-		http = "message.method,' ',resourcePathSafelyTyped,' HTTP/',format('%.1f',message.version),$0D,$0A"
-	}
-	else if(message.type = 'response') {
-		append_string(http,"'HTTP/',ftoa(message.version),' ',itoa(message.statusCode),' ',message.reasonPhrase,$0D,$0A");
-	}
-	else {	// unhandled type
-		return "'ERROR:Unhandled HTTP message type "',message.type,'"'";
-	}
-	
-	// Header Lines
-	i = 1;
-	while(i <= length_array(message.headers.keyVals)) {
-		append_string(http,"message.headers.keyVals[i].key,': ',message.headers.keyVals[i].val,$0D,$0A");
-		i++;
-	}
-
-	append_string(http,"$0D,$0A");
-
-	// Message Body
-	append_string(http,"message.body");
-
-	return http;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpFromString
-//
-// Parameters:
-//    HttpMessage message   -   A HTTP message object
-//    char str[]            -   A character string of undetermined length
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Takes a HTTP message object and a character array assumed to contain HTTP protocol string and builds the values
-//    of the HTTP message object as per the contents of the HTTP string.
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpFromString(HttpMessage message, char str[]) {
-	stack_var char initialLine[500];
-	stack_var char headerLines[2048];
-
-	if(str == '') {
-		// string is empty - abort
-		return;
-	}
-
-	if(!find_string(str,'HTTP/',1)) {
-		// string does not contain the required 'HTTP/' to be a HTTP string - abort
-		return;
-	}
-
-	// Initial Request/Response Line
-	initialLine = remove_string(str,"$0D,$0A",1);
-
-	if(find_string(initialLine,'HTTP/',1) == 1) {	// starts with 'HTTP/', must be a response
-		httpSetType_Response(message);
-		httpSetVersion(message,atof(remove_string(initialLine,' ',1)));
-		httpSetStatuscode(message,atoi(remove_string(initialLine,' ',1)));
-		delete_string(initialLine,"$0D,$0A");
-		httpSetReasonPhrase(message,initialLine);
-	}
-	else {	// it's a request
-		STACK_VAR char method[8];
-		STACK_VAR char path[200];
-
-		method = remove_string(initialLine,' ',1);
-		trim_string(method,0,1);
-
-		path = remove_string(initialLine,' ',1);
-		trim_string(path,0,1);
-
-		httpSetType_Request(message);
-		httpSetMethod(message,method);
-		httpSetResourcePath(message,path);
-
-		remove_string(initialLine,'HTTP/',1);
-
-		httpSetVersion(message,atof(initialLine));
-	}
-
-	if(find_string(str,"$0D,$0A",1) != 1)	// header lines exist
-	{
-		// Header Lines
-		headerLines = remove_string(str,"$0D,$0A,$0D,$0A",1);
-
-		while(find_string(headerLines,':',1)) {
-			stack_var char headerFieldName[100];
-			stack_var char headerFieldValue[100];
-
-			headerFieldName = remove_string(headerLines,':',1);
-			trim_string(headerFieldName,0,1);
-
-			append_string(headerFieldValue,remove_string(headerLines,"$0D,$0A",1));
-
-			delete_string(headerFieldValue,"$0D,$0A");
-
-			// trim leading whitespace
-			while((headerFieldValue[1] == ' ') || (headerFieldValue[1] == $09)) {
-				trim_string(headerFieldValue,1,0);
-			}
-			// trim trailing whitespace
-			while((headerFieldValue[length_string(headerFieldValue)] == ' ') || (headerFieldValue[length_string(headerFieldValue)] == $09)) {
-				trim_string(headerFieldValue,0,1);
-			}
-
-			// there could be just one value or there could be multiple values (seperated by commas) and they may be spread 
-			// over multiple lines (in which case the line will start with space or tab).
-			// To add to the confusion some values may actually contain commas as part of their value
-			while((find_string(headerLines,"SPACE",1) == 1) || (find_string(headerLines,"TABH",1) == 1)) {
-				stack_var char newVal[100];
-
-				newVal = remove_string(headerLines,"$0D,$0A",1);
-				delete_string(newVal,"$0D,$0A");
-
-				// trim leading whitespace
-				while((newVal[1] == ' ') || (newVal[1] == $09)) {
-					trim_string(newVal,1,0);
-				}
-
-				// trim trailing whitespace
-				while((newVal[length_string(newVal)] == ' ') || (newVal[length_string(newVal)] == $09)) {
-					trim_string(newVal,0,1);
-				}
-
-				append_string(headerFieldValue,newVal);
-			}
-
-			// now the string may contain just one value or perhaps multiple values seperated by commas
-
-			// should we trim whitespace?
-			// we would have to be careful if we do this. We can't just delete all spaces because the values themselves may 
-			// contain spaces
-
-			httpSetHeader(message,headerFieldName,headerFieldValue);
+	for(i=1; i<=length_array(headers); i++) {
+		if(lower_string(headers[i].name) == lower_string(name)) {
+			headers[i].value = value;
+			return;
 		}
 	}
-	else { // header lines do not exist
-		// remove the blank line
-		remove_string(str,"$0D,$0A",1);
+	
+	if(length_array(headers) < max_length_array(headers)) {
+		set_length_array(headers,length_array(headers)+1);
+		headers[length_array(headers)].name = name;
+		headers[length_array(headers)].value = value;
 	}
-
-	// Message Body
-	httpSetMessageBody(message,str);
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpClear
+// Function: httpRequestGetHeaderValues
 //
 // Parameters:
-//    HttpMessage message   -   A HTTP message object
+//    HttpRequest request   -   HTTP request object
+//    char[] name           -   name of header
+//    char[][] value        -   2-dimensional character array to store HTTP header values
 //
 // Returns:
 //    nothing
 //
 // Description:
-//    Clears the contents of an HTTP message object
+//    Searches for any instances of a specified header in a HTTP request object and populates the provided values array
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpClear(HttpMessage message) {
-	message.body = '';
-	dictionaryClear(message.headers);
-	message.method = '';
-	message.reasonPhrase = '';
-	message.resourcePath = '';
-	message.statusCode = 0;
-	message.type = '';
-	message.version = 0;
+define_function httpRequestGetHeaderValues(HttpRequest request, char name[], char values[][]) {
+	httpGetHeaderValues(request.headers,name,values);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: function_name
+// Function: httpResponseGetHeaderValues
 //
 // Parameters:
-//    datatype identifier   - description
+//    HttpResponse response   -   HTTP response object
+//    char[] name             -   name of HTTP header
+//    char[][] value          -   2-dimensional character array to store HTTP header values
 //
 // Returns:
-//    datatype   -   description
+//    nothing
 //
 // Description:
-//    description
+//    Searches for any instances of a specified header in a HTTP response object and populates the provided values array
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION httpPopulateSafeCharacterDictionary() {
-	stack_var char c;
-	c = $00;
-	while(c <= $FF) {
-		if(uriIsReservedChar(c) || uriIsReservedChar(c))
-			dictionaryAdd(httpSafeCharacterDict,"c","c");
-		else
-			dictionaryAdd(httpSafeCharacterDict,"c",uriPercentEncodeChar(c));
-		c++;
+define_function httpResponseGetHeaderValues(HttpResponse response, char name[], char values[][]) {
+	httpGetHeaderValues(response.headers,name,values);
+}
 
-		if(c == $00)	// we wrapped around
-			break;
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpGetHeaderValues
+//
+// Parameters:
+//    HttpHeader[] headers   -   HTTP headers array
+//    char[] name            -   name of HTTP header
+//    char[][] value         -   2-dimensional character array to store HTTP header values
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Searches for any instances of a specified header in a HTTP headers array object and populates the provided values
+//    array
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpGetHeaderValues(HttpHeader headers[], char name[], char values[][]) {
+	integer i;
+	
+	for(i=1; i<=length_array(headers); i++) {
+		if(lower_string(headers[i].name) == lower_string(name)) {
+			if(length_array(values) == max_length_array(values)) {
+				return;
+			}
+			set_length_array(values,length_array(values)+1);
+			values[length_array(values)] = headers[i].value;
+		}
+	}
+} 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestRemoveHeader
+//
+// Parameters:
+//    HttpRequest request        -   HTTP request object
+//    char[] name                -   name of HTTP header
+//    integer removeAllMatches   -   boolean value indicating whether all instances of matching HTTP header should be 
+//                                   removed
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Removes either the first instance of a specified HTTP header from a HTTP request object or all instances of the
+//    specified header, dependent on true / false indicator supplied
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpRequestRemoveHeader(HttpRequest request, char name[], integer removeAllMatches) {
+	httpRemoveHeader(request.headers, name, removeAllMatches);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseRemoveHeader
+//
+// Parameters:
+//    HttpResponse response      -   HTTP response object
+//    char[] name                -   name of HTTP header
+//    integer removeAllMatches   -   boolean value indicating whether all instances of matching HTTP header should be 
+//                                   removed
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Removes either the first instance of a specified HTTP header from a HTTP response object or all instances of the
+//    specified header, dependent on true / false indicator supplied
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpResponseRemoveHeader(HttpResponse response, char name[], integer removeAllMatches) {
+	httpRemoveHeader(response.headers, name, removeAllMatches);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRemoveHeader
+//
+// Parameters:
+//    HttpHeader[] headers       -   HTTP headers array
+//    char[] name                -   name of HTTP header
+//    integer removeAllMatches   -   boolean value indicating whether all instances of matching HTTP header should be 
+//                                   removed
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Removes either the first instance of a specified HTTP header from a HTTP headers array object or all instances of
+//    the specified header, dependent on true / false indicator supplied
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpRemoveHeader(HttpHeader headers[], char name[], integer removeAllMatches) {
+	integer i;
+	
+	for(i=1; i<=length_array(headers); i++) {
+		if(lower_string(headers[i].name) == lower_string(name)) {
+			if(i==length_array(headers)) {
+				headers[i].name = '';
+				headers[i].value = '';
+				set_length_array(headers,i-1);
+				return;
+			}
+			else {
+				integer j;
+				for(j=i; j<length_array(headers);j++) {
+					headers[j].name = headers[j+1].name
+					headers[j].value = headers[j+1].value
+				}
+				set_length_array(headers,j-1);
+			}
+			
+			if(!removeAllMatches) {
+				return;
+			} else {
+				i--;
+			}
+		}
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestHasHeader
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
+//    char[] name           -   name of HTTP header
+//
+// Returns:
+//    integer   -   boolean (true/false) value indicating whether specified HTTP header was found
+//
+// Description:
+//    Searches HTTP request object for the existence of the specified HTTP header and returns a true/false value 
+//    depending on the result 
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function integer httpRequestHasHeader(HttpRequest request, char name[]) {
+	return httpHasHeader(request.headers, name);
+}
 
-DEFINE_START
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseHasHeader
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
+//    char[] name             -   name of HTTP header
+//
+// Returns:
+//    integer   -   boolean (true/false) value indicating whether specified HTTP header was found
+//
+// Description:
+//    Searches HTTP response object for the existence of the specified HTTP header and returns a true/false value 
+//    depending on the result 
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function integer httpResponseHasHeader(HttpResponse response, char name[]) {
+	return httpHasHeader(response.headers, name);
+}
 
-httpPopulateSafeCharacterDictionary();
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpHasHeader
+//
+// Parameters:
+//    HttpHeader[] headers   -   array of HTTP headers
+//    char[] name            -   name of HTTP header
+//
+// Returns:
+//    integer   -   boolean (true/false) value indicating whether specified HTTP header was found
+//
+// Description:
+//    Searches HTTP header array for the existence of the specified HTTP header and returns a true/false value 
+//    depending on the result 
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function integer httpHasHeader(HttpHeader headers[], char name[]) {
+	integer i;
+	
+	for(i=1; i<=length_array(headers); i++) {
+		if(lower_string(headers[i].name) == lower_string(name)) {
+			return true;
+		}
+	}
+	
+	return false;
+}
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestGetHeaderNames
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
+//
+// Returns:
+//    char[20][100]   - 2-dimensional character array containing list of HTTP header names
+//
+// Description:
+//    Returns a list containing the names of all HTTP headers contained in the HTTP request object
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function char[20][100] httpRequestGetHeaderNames(HttpRequest request) {
+	#warn '@todo: implement httpRequestGetHeaderNames method'
+}
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseGetHeaderNames
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
+//
+// Returns:
+//    char[20][100]   - 2-dimensional character array containing list of HTTP header names
+//
+// Description:
+//    Returns a list containing the names of all HTTP headers contained in the HTTP response object
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function char[20][100] httpResponseGetHeaderNames(HttpResponse response) {
+	#warn '@todo: implement httpResponseGetHeaderNames method'
+}
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpGetHeaderNames
+//
+// Parameters:
+//    HttpHeader[] headers   -   array of HTTP headers
+//
+// Returns:
+//    char[20][100]   - 2-dimensional character array containing list of HTTP header names
+//
+// Description:
+//    Returns a list containing the names of all HTTP headers contained in the HTTP header array
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function char[20][100] httpGetHeaderNames(HttpHeader headers[]) {
+	#warn '@todo: implement httpGetHeaderNames method'
+}
 
+/*
+HTTP Response Status Specific Functions
+*/
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseGetStatusCode
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
+//
+// Returns:
+//    integer   -   status code
+//
+// Description:
+//    Returns the status code of the HTTP response
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function integer httpResponseGetStatusCode(HttpResponse response) {
+    return response.status.code;
+}
 
-#END_IF
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseGetStatusMessage
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
+//
+// Returns:
+//    char[100]   -   status message
+//
+// Description:
+//    Returns the status message of the HTTP response
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function char[100] httpResponseGetStatusMessage(HttpResponse response) {
+    return response.status.message;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseSetStatusCode
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
+//    integer code            -   status code
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Assigns a status code to the HTTP response
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpResponseSetStatusCode(HttpResponse response, integer code) {
+    response.status.code = code;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseSetStatusMessage
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
+//    char[] message          -   status message
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Assigns a status message to the HTTP response
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpResponseSetStatusMessage(HttpResponse response, char message[]) {
+    response.status.message = message;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseSetStatus
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
+//    integer code            -   status code
+//    char[] message          -   status message
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Assigns a status (code and message) to the HTTP response
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpResponseSetStatus(HttpResponse response, integer code, char message[]) {
+    response.status.code = code;
+    response.status.message = message;
+}
+
+/*
+HTTP Version Specific Functions
+*/
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseSetVersion
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
+//    float version           -   HTTP version
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Assigns a HTTP version to the HTTP response
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpResponseSetVersion(HttpResponse response, float version) {
+    response.version = version;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseSetVersion
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
+//    float version         -   HTTP version
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Assigns a HTTP version to the HTTP request
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpRequestSetVersion(HttpRequest request, float version) {
+    request.version = version;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseGetVersion
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
+//
+// Returns:
+//    float   -   HTTP version
+//
+// Description:
+//    Returns the HTTP version of the HTTP response
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function float httpResponseGetVersion(HttpResponse response) {
+    return response.version;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestGetVersion
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
+//
+// Returns:
+//    float   -   HTTP version
+//
+// Description:
+//    Returns the HTTP version of the HTTP request
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function float httpRequestGetVersion(HttpRequest request) {
+    return request.version;
+}
+
+/*
+HTTP Body Specific Functions
+*/
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseSetBody
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
+//    char[] body             -   body of HTTP message
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Assigns a string to the body of the HTTP response
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpResponseSetBody(HttpResponse response, char body[]) {
+    response.body = body;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestSetBody
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
+//    char[] body           -   body of HTTP message
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Assigns a string to the body of the HTTP request
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpRequestSetBody(HttpRequest request, char body[]) {
+    request.body = body;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseGetBody
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
+//
+// Returns:
+//    char[]   -   body of HTTP response
+//
+// Description:
+//    Returns the body of the HTTP response
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function char[HTTP_MAX_BODY_LENGTH] httpResponseGetBody(HttpResponse response) {
+    return response.body;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestGetBody
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
+//
+// Returns:
+//    char[]   -   body of HTTP request
+//
+// Description:
+//    Returns the body of the HTTP request
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function char[HTTP_MAX_BODY_LENGTH] httpRequestGetBody(HttpRequest request) {
+    return request.body;
+}
+
+/*
+HTTP Request Target Specific Functions
+*/
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestSetTarget
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
+//    char[] target           -   URL target
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Assigns a URL target to the HTTP request
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpRequestSetTarget(HttpRequest request, char target[]) {
+    request.target = target;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestGetTarget
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
+//
+// Returns:
+//    char[]   -   URL target
+//
+// Description:
+//    Returns the URL target of the HTTP request
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function char[200] httpRequestGetTarget(HttpRequest request) {
+    return request.target;
+}
+
+/*
+HTTP Request Method Specific Functions
+*/
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestGetMethod
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
+//
+// Returns:
+//    char[]   -   HTTP method
+//
+// Description:
+//    Returns the method of the HTTP request
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function char[10] httpRequestGetMethod(HttpRequest request) {
+    return request.method;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestSetMethod
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
+//    char[] method         -   HTTP method
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Sets the method of the HTTP request
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpRequestSetMethod(HttpRequest request, char method[]) {
+    request.method = method;
+}
+
+/*
+HTTP Authentication Header Functions
+*/
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpCreateBasicAuthenticationHeader
+//
+// Parameters:
+//    char[] username   -   user name
+//    char[] password   -   password
+//
+// Returns:
+//    char[]   -   HTTP authentication header value
+//
+// Description:
+//    Return the value for a HTTP Authentication header using basic authentication
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function char[1024] httpCreateBasicAuthenticationHeader(char username[], char password[]) {
+    stack_var char auth[1024];
+    
+    auth = "'Basic ',base64Encode("username,':',password")"
+    
+    return auth;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpCreateDigestAuthenticationHeader
+//
+// Parameters:
+//    char[] method       -   digest method
+//    char[] requestUrl   -   request URI
+//    char[] realm        -   
+//    char[] username     -   user name
+//    char[] password     -   password
+//    char[] nonce        -   
+//    char[] cnonce       -   
+//    char[] nc           -   
+//    char[] qop          -   
+//    char[] algorithm    -   
+//    char[] opaque       -   
+//    char[] entityBody   -  
+//
+// Returns:
+//    char[]   -   HTTP authentication header value
+//
+// Description:
+//    Return the value for a HTTP Authentication header using digest authentication
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function char[1024] httpCreateDigestAuthenticationHeader(char method[], char requestUri[], char realm[],
+                                                                char username[], char password[],
+                                                                char nonce[], char cnonce[30], char nc[8],
+                                                                char qop[], char algorithm[],
+                                                                char opaque[], char entityBody[]) {
+    stack_var char HA1_hex[16], HA2_hex[16], response_hex[16];
+    stack_var char HA1_str[32], HA2_str[32], response_str[32];
+    stack_var char auth[1024];
+    
+    if(cnonce == '') {
+		cnonce = "lower_string(hex(ltba(random_number($FFFFFFFF)))),lower_string(hex(ltba(random_number($FFFFFFFF))))";
+		nc = '00000001';
+    }
+    else {
+		if(itoa(nc) == 0) {
+			nc = '00000001';
+		}
+		else {
+			stack_var long nc_val;
+			
+			nc_val = hextoi(nc);
+			nc_val++;
+			nc = itohex(nc_val);
+			
+			while(length_array(nc)<8) {
+			nc = "'0',nc";
+			}
+		}
+    }
+    
+    if((algorithm == '') || (upper_string(algorithm) == 'MD5')) {
+		HA1_hex = md5("username,':',realm,':',password");
+		HA1_str = lower_string(hex(HA1_hex));
+    }
+    else if(upper_string(algorithm) == 'MD5-SESS') {
+		HA1_hex = md5("md5("username,':',realm,':',password"),':',nonce,':',cnonce");
+		HA1_str = lower_string(hex(HA1_hex));
+    }
+    
+    if(qop == '') {
+		HA2_hex = md5("method,':',requestUri");
+		HA2_str = lower_string(hex(HA2_hex));
+		response_hex = md5("HA1_str,':',nonce,':',HA2_str");
+		response_str = lower_string(hex(response_hex));
+    }
+    else if(qop == 'auth' || find_string(lower_string(qop),'auth,',1)) {
+		HA2_hex = md5("method,':',requestUri");
+		HA2_str = lower_string(hex(HA2_hex));
+		response_hex = md5("HA1_str,':',nonce,':',nc,':',cnonce,':','auth',':',HA2_str");
+		response_str = lower_string(hex(response_hex));
+    }
+    else if(find_string(lower_string(qop),'auth-int',1)) {
+		HA2_hex = md5("method,':',requestUri,':',lower_string(hex(md5(entityBody)))");
+		HA2_str = lower_string(hex(HA2_hex));
+		response_hex = md5("HA1_str,':',nonce,':',nc,':',cnonce,':','auth-int',':',HA2_str");
+		response_str = lower_string(hex(response_hex));
+    }
+    
+    auth = "'Digest username="',username,'", realm="',realm,'", nonce="',nonce,'", uri="',requestUri,'"'";
+    
+    if(upper_string(algorithm) == 'MD5') {
+		auth =  "auth,', algorithm=MD5'"
+    }
+    else if(upper_string(algorithm) == 'MD5-SESS') {
+		auth =  "auth,', algorithm=MD5-sess'"
+    }
+    
+    auth =  "auth,', response="',response_str,'"'"
+    
+    if(opaque != '') {
+		auth =  "auth,', opaque="',opaque,'"'"
+    }
+    
+    if(qop == 'auth' || find_string(lower_string(qop),'auth,',1)) {
+		auth =  "auth,', qop=auth'"
+    }
+    else if(find_string(lower_string(qop),'auth-int',1)) {
+		auth =  "auth,', qop=auth-int'"
+    }
+    
+    if(qop != '') {
+		auth =  "auth,', nc=',nc"
+		auth =  "auth,', cnonce="',cnonce,'"'"
+    }
+    
+    return auth;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestCopy
+//
+// Parameters:
+//    HttpRequest copyFrom   -   HTTP request object
+//    HttpRequest copyTo     -   HTTP request object
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Makes a direct copy of a HTTP request object
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpRequestCopy(HttpRequest copyFrom, HttpRequest copyTo) {
+	integer i;
+	
+	copyTo.method = copyFrom.method;
+	copyTo.target = copyFrom.target;
+	copyTo.version = copyFrom.version;
+	
+	for(i=1; i<=length_array(copyFrom.headers); i++) {
+		copyTo.headers[i].name = copyFrom.headers[i].name;
+		copyTo.headers[i].value = copyFrom.headers[i].value;
+	}
+	set_length_array(copyTo.headers, length_array(copyFrom.headers));
+	
+	copyTo.body   = copyFrom.body;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseCopy
+//
+// Parameters:
+//    HttpResponse copyFrom   -   HTTP response object
+//    HttpResponse copyTo     -   HTTP response object
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Makes a direct copy of a HTTP response object
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpResponseCopy(HttpResponse copyFrom, HttpResponse copyTo) {
+	integer i;
+	
+	copyTo.version = copyFrom.version;
+	copyTo.status.code = copyFrom.status.code;
+	copyTo.status.message = copyFrom.status.message;
+	
+	for(i=1; i<=length_array(copyFrom.headers); i++) {
+		copyTo.headers[i].name = copyFrom.headers[i].name;
+		copyTo.headers[i].value = copyFrom.headers[i].value;
+	}
+	set_length_array(copyTo.headers, length_array(copyFrom.headers));
+	
+	copyTo.body   = copyFrom.body;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpRequestInit
+//
+// Parameters:
+//    HttpRequest request   -   HTTP request object
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Initializes a HTTP request and clears all stored values
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpRequestInit(HttpRequest request) {
+	integer i;
+	
+	request.method = '';
+	request.target = '';
+	request.version = 0;
+	
+	for(i=1; i<=length_array(request.headers); i++) {
+		request.headers[i].name = '';
+		request.headers[i].value = '';
+	}
+	set_length_array(request.headers,0);
+	
+	request.body = '';
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: httpResponseInit
+//
+// Parameters:
+//    HttpResponse response   -   HTTP response object
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Initializes a HTTP response and clears all stored values
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function httpResponseInit(HttpResponse response) {
+	integer i;
+	
+	response.version = 0;
+	response.status.code = 0;
+	response.status.message = '';
+	
+	for(i=1; i<=length_array(response.headers); i++) {
+		response.headers[i].name = '';
+		response.headers[i].value = '';
+	}
+	set_length_array(response.headers,0);
+	
+	response.body = '';
+}
+
+#end_if

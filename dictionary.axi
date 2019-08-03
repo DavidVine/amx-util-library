@@ -234,4 +234,31 @@ DEFINE_FUNCTION dictionaryClear(Dictionary dict) {
 	set_length_array(dict.keyVals,0);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: dictionaryCopy
+//
+// Parameters:
+//    Dictionary dictCopyFrom   -   A dictionary used to store key/val pairs.
+//    Dictionary dictCopyTo     -   A dictionary used to store key/val pairs.
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Copies one dictionary to another
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+DEFINE_FUNCTION dictionaryCopy(Dictionary dictCopyFrom,Dictionary dictCopyTo) {
+	stack_var integer i;
+
+	dictionaryClear(dictCopyTo);
+
+	for(i = 1; i <= length_array(dictCopyFrom.keyVals); i++) {
+		dictCopyTo.keyVals[i].key = dictCopyFrom.keyVals[i].key;
+		dictCopyTo.keyVals[i].val = dictCopyFrom.keyVals[i].val;
+	}
+	set_length_array(dictCopyTo.keyVals,length_array(dictCopyFrom.keyVals));
+}
+
 #end_if

@@ -815,7 +815,7 @@ define_function char[200] webSocketCreateHandshakeKeyServer(char secWebSocketKey
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function webSocketSendOpenHandshake(dev socket) {
-	HttpMessage http;
+	HttpRequest httpReq;   //HttpMessage http;
 	char secWebSocketKey[200], host[200];
 	integer idx;
 
@@ -828,30 +828,29 @@ define_function webSocketSendOpenHandshake(dev socket) {
 
 	webSockets[idx].clientHandshakeKey = webSocketCreateHandshakeKeyClient();
 
-	httpClear(http);
-	httpSetType_Request(http);
-	httpSetMethod(http,'GET');
-	httpSetVersion(http,1.1);
-	httpSetResourcePath(http,uriToString(webSockets[idx].url)); //'ws://echo.websocket.org');
-	httpSetHeader(http,'Host',webSockets[idx].url.host);
-	httpSetHeader(http,'Connection','Upgrade');
-	httpSetHeader(http,'Upgrade','websocket');
-	httpSetHeader(http,'Origin',"'http://',webSockets[idx].url.host");
+	httpRequestInit(httpReq);
+	httpRequestSetMethod(httpReq, HTTP_METHOD_GET);
+	httpRequestSetVersion(httpReq, 1.1);
+	httpRequestSetTarget(httpReq, uriToString(webSockets[idx].url)); //'ws://echo.websocket.org');
+	httpRequestSetHeader(httpReq, 'Host', webSockets[idx].url.host);
+	httpRequestSetHeader(httpReq, 'Connection', 'Upgrade');
+	httpRequestSetHeader(httpReq, 'Upgrade', 'websocket');
+	httpRequestSetHeader(httpReq, 'Origin', "'http://',webSockets[idx].url.host");
 	if(length_string(WebSockets[idx].sessionId)) {
-	httpSetHeader(http,'Cookie',WebSockets[idx].sessionId);//"'JSESSIONID=','6wi46ymy1v9ss6yv289loli2'"); // 5wi46ymy1v9ss6yv289loli2
+		httpRequestSetHeader(httpReq, 'Cookie', WebSockets[idx].sessionId); //"'JSESSIONID=','6wi46ymy1v9ss6yv289loli2'"); // 5wi46ymy1v9ss6yv289loli2
 	}
-	httpSetHeader(http,'Sec-WebSocket-Version','13');	// version 13 is the standard as defined by RFC6455
-	httpSetHeader(http,'Sec-WebSocket-Key',webSockets[idx].clientHandshakeKey);
+	httpRequestSetHeader(httpReq, 'Sec-WebSocket-Version', '13'); // version 13 is the standard as defined by RFC6455
+	httpRequestSetHeader(httpReq, 'Sec-WebSocket-Key', webSockets[idx].clientHandshakeKey);
 	if(length_string(webSockets[idx].subprotocols)) {
-		httpSetHeader(http,'Sec-WebSocket-Protocol',webSockets[idx].subprotocols);
+		httpRequestSetHeader(httpReq, 'Sec-WebSocket-Protocol', webSockets[idx].subprotocols);
 	}
 	print("'Sending HTTP WebSocket Open Handshake to Socket[',devToString(socket),']:'",false);
 
-	print(httpToString(http),true);
+	print(httpRequestToString(httpReq),true);
 
 	webSockets[idx].readyState = CONNECTING;
 
-	send_string socket, httpToString(http);
+	send_string socket, httpRequestToString(httpReq);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -928,7 +927,7 @@ data_event[wsSockets] {
 	string: {
 		integer idx;
 		dev socket;
-		stack_var HttpMessage httpResponse;
+		stack_var HttpResponse httpResp; //stack_var HttpMessage httpResponse;
 		stack_var WebSocketFrame wsf;
 
 		idx = get_last(wsSockets)
@@ -965,12 +964,12 @@ data_event[wsSockets] {
 			stack_var char cookie[100];
 
 			print("'Data received on Socket[',devToString(socket),'] is HTTP:'",false);
-			httpFromString(httpResponse,data.text);
-			print(httpToString(httpResponse),true);
+			httpParseResponse(httpResp, data.text);
+			print(httpResponseToString(httpResp),true);
 
 			expectedWebSocketAcceptValue = webSocketCreateHandshakeKeyServer(webSockets[idx].clientHandshakeKey);
 
-			cookie = httpGetHeader(httpResponse,'Set-Cookie')
+			cookie = httpResponseGetHeader(httpResp,'Set-Cookie')
 			if(cookie != '') {
 				if(find_string(cookie,"';'",1)) {
 					WebSockets[idx].sessionId = remove_string(cookie,"';'",1);
@@ -980,20 +979,20 @@ data_event[wsSockets] {
 				}
 			}
 
-			if(httpGetStatusCode(httpResponse) != 101) {
-				print("'WebSocket open handshake failed on Socket[',devToString(socket),']. Status Code: ',itoa(httpGetStatusCode(httpResponse))",false);
+			if(httpResponseGetStatusCode(httpResp) != HTTP_STATUS_CODE_SWITCHING_PROTOCOLS) {
+				print("'WebSocket open handshake failed on Socket[',devToString(socket),']. Status Code: ',itoa(httpResponseGetStatusCode(httpResp))",false);
 				webSocketOnError(socket,0,'');
 				webSocketClose(socket,0,'');
-			} else if(LOWER_STRING(httpGetHeader(httpResponse,'Upgrade')) != 'websocket') {
-				print("'WebSocket open handshake failed on Socket[',devToString(socket),']. Upgrade: ',httpGetHeader(httpResponse,'Upgrade')",false);
+			} else if(LOWER_STRING(httpResponseGetHeader(httpResp,'Upgrade')) != 'websocket') {
+				print("'WebSocket open handshake failed on Socket[',devToString(socket),']. Upgrade: ',httpResponseGetHeader(httpResp,'Upgrade')",false);
 				webSocketOnError(socket,0,'');
 				webSocketClose(socket,0,'');
-			} else if(UPPER_STRING(httpGetHeader(httpResponse,'Connection')) != UPPER_STRING('Upgrade')) {
-				print("'WebSocket open handshake failed on Socket[',devToString(socket),']. Connection: ',httpGetHeader(httpResponse,'Connection')",false);
+			} else if(UPPER_STRING(httpResponseGetHeader(httpResp,'Connection')) != UPPER_STRING('Upgrade')) {
+				print("'WebSocket open handshake failed on Socket[',devToString(socket),']. Connection: ',httpResponseGetHeader(httpResp,'Connection')",false);
 				webSocketOnError(socket,0,'');
 				webSocketClose(socket,0,'');
-			} else if(httpGetHeader(httpResponse,'Sec-WebSocket-Accept') != expectedWebSocketAcceptValue) {
-				print("'WebSocket open handshake failed on Socket[',devToString(socket),']. Sec-WebSocket-Accept: ',httpGetHeader(httpResponse,'Sec-WebSocket-Accept')",false);
+			} else if(httpResponseGetHeader(httpResp,'Sec-WebSocket-Accept') != expectedWebSocketAcceptValue) {
+				print("'WebSocket open handshake failed on Socket[',devToString(socket),']. Sec-WebSocket-Accept: ',httpResponseGetHeader(httpResp,'Sec-WebSocket-Accept')",false);
 				webSocketOnError(socket,0,'');
 				webSocketClose(socket,0,'');
 			} else {

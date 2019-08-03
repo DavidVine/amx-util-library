@@ -153,6 +153,37 @@ DEFINE_FUNCTION char[DICTIONARY_MAX_VAL_LENGTH] dictionaryGetValue(Dictionary di
 	return '';
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: dictionaryGetValueIgnoreKeyCase
+//
+// Parameters:
+//    Dictionary dict   -   A dictionary used to store key/val pairs.
+//    char key[]        -   A character array of undefined length containing a key to search with
+//
+// Returns:
+//    char[DICTIONARY_MAX_VAL_LENGTH]   -   A character array containing the value.
+//
+// Description:
+//    Searches the dictionary for a matching key (case insensitive) and if found returns the associated value otherwise
+//    returns an empty string ('').
+//    Note: Because search is for a case-insensitive match and there may be multiple keys with the same spelling (but
+//          different case (e.g: 'KEYA', 'KeYa') the result will be the first key with matching spelling, regardless of
+//          case.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+DEFINE_FUNCTION char[DICTIONARY_MAX_VAL_LENGTH] dictionaryGetValueIgnoreKeyCase(Dictionary dict, char key[]) {
+	stack_var integer i;
+	i = 1;
+	while(i <= length_array(dict.keyVals)) {
+		if(upper_string(dict.keyVals[i].key) == upper_string(key))
+			return dict.keyVals[i].val;
+		i++;
+	}
+	return '';
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
 // Function: dictionaryGetIndex

@@ -75,7 +75,7 @@ Usage:
 #insert 'convert'
 ```
 Dependencies:
-* `convert.axi`
+* none
 
 ---
 
@@ -91,6 +91,19 @@ Dependencies:
 * `cipher.axi`
 * `codec.axi`
 * `hash.axi`
+
+---
+
+#### `date-time.axi`
+
+Functions relating to date/time.
+
+Usage:
+```
+#include 'date-time'
+```
+Dependencies:
+* none
 
 ---
 
@@ -129,31 +142,45 @@ Usage:
 #include 'hash'
 ```
 Dependencies:
+* `md5.axi`
 * `sha1.axi`
+* `sha256.axi`
 
 ---
 
 #### `http.axi`
 
-Functions to assist with building/parsing HTTP strings.
+Functions to assist with building/parsing HTTP requests/responses.
 
 Usage:
 ```
 #include 'http'
 ```
 Dependencies:
-* `dictionary.axi`
-* `string.axi`
+* `base64.axi`
+* `md5.axi`
 * `uri.axi`
+
+---
+
+#### `hmac.axi`
+
+Function to compute HMAC.
+
+Usage:
+```
+#include 'hmac'
+```
+Dependencies:
+* `md5.axi`
+* `sha1.axi`
+* `sha256.axi`
 
 ---
 
 #### `json.axi`
 
-**[Not yet implemented]**
-
 Functions to assist with building/parsing JSON strings.
-
 
 Usage:
 ```
@@ -161,6 +188,34 @@ Usage:
 ```
 Dependencies:
 * none
+
+---
+
+#### `json-rpc.axi`
+
+Functions to assist with building JSON-RPC strings.
+
+Usage:
+```
+#include 'json-rpc'
+```
+Dependencies:
+* `json.axi`
+
+---
+
+#### `jwt.axi`
+
+Function to assist with building JSON Web Tokens (JWT)
+
+Usage:
+```
+#include 'jwt'
+```
+Dependencies:
+* `json.axi`
+* `base64.axi`
+* `hmac.axi`
 
 ---
 
@@ -205,7 +260,24 @@ Usage:
 #include 'sha1'
 ```
 Dependencies:
-* none
+* `binary.axi`
+* `convert.axi`
+* `string.axi`
+
+---
+
+#### `sha256.axi`
+
+Functions relating to the SHA-256 hashing algorithm.
+
+Usage:
+```
+#include 'sha256'
+```
+Dependencies:
+* `binary.axi`
+* `convert.axi`
+* `string.axi`
 
 ---
 

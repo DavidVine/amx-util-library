@@ -831,7 +831,7 @@ define_function webSocketSendOpenHandshake(dev socket) {
 	httpRequestInit(httpReq);
 	httpRequestSetMethod(httpReq, HTTP_METHOD_GET);
 	httpRequestSetVersion(httpReq, 1.1);
-	httpRequestSetTarget(httpReq, uriToString(webSockets[idx].url)); //'ws://echo.websocket.org');
+	httpRequestSetUri(httpReq, uriToString(webSockets[idx].url)); //'ws://echo.websocket.org');
 	httpRequestSetHeader(httpReq, 'Host', webSockets[idx].url.host);
 	httpRequestSetHeader(httpReq, 'Connection', 'Upgrade');
 	httpRequestSetHeader(httpReq, 'Upgrade', 'websocket');

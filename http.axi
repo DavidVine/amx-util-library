@@ -26,7 +26,7 @@ struct HttpHeader {
 struct HttpRequest {
     float version;
     char method[10];
-    char target[200];
+    char uri[200];
     HttpHeader headers[20];
     char body[HTTP_MAX_BODY_LENGTH];
 }
@@ -373,7 +373,7 @@ define_function char[HTTP_MAX_MESSAGE_LENGTH] httpRequestToString(HttpRequest re
     char http[1024];
     integer i;
     
-    http = "request.method,' ',uriPercentEncodeString(request.target),' HTTP/',format('%.1f',request.version),$0d,$0a"
+    http = "request.method,' ',uriPercentEncodeString(request.uri),' HTTP/',format('%.1f',request.version),$0d,$0a"
     
     for(i=1; i<=length_array(request.headers); i++) {
 		http = "http,request.headers[i].name,': ',request.headers[i].value,$0d,$0a";
@@ -405,7 +405,7 @@ define_function httpRequestToDebug(HttpRequest request) {
 	
 	AMX_LOG(AMX_DEBUG,'----- BEGIN HTTP REQUEST -----');
     
-    AMX_LOG(AMX_DEBUG,"request.method,' ',uriPercentEncodeString(request.target),' HTTP/',format('%.1f',request.version)");
+    AMX_LOG(AMX_DEBUG,"request.method,' ',uriPercentEncodeString(request.uri),' HTTP/',format('%.1f',request.version)");
     
     for(i=1; i<=length_array(request.headers); i++) {
 		AMX_LOG(AMX_DEBUG,"request.headers[i].name,': ',request.headers[i].value");
@@ -1103,44 +1103,44 @@ define_function char[HTTP_MAX_BODY_LENGTH] httpRequestGetBody(HttpRequest reques
 }
 
 /*
-HTTP Request Target Specific Functions
+HTTP Request URI Specific Functions
 */
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpRequestSetTarget
+// Function: httpRequestSetUri
 //
 // Parameters:
 //    HttpRequest request   -   HTTP request object
-//    char[] target           -   URL target
+//    char[] uri            -   request URI
 //
 // Returns:
 //    nothing
 //
 // Description:
-//    Assigns a URL target to the HTTP request
+//    Assigns a URI to the HTTP request
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpRequestSetTarget(HttpRequest request, char target[]) {
-    request.target = target;
+define_function httpRequestSetUri(HttpRequest request, char uri[]) {
+    request.uri = uri;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpRequestGetTarget
+// Function: httpRequestGetUri
 //
 // Parameters:
 //    HttpRequest request   -   HTTP request object
 //
 // Returns:
-//    char[]   -   URL target
+//    char[]   -   request URI
 //
 // Description:
-//    Returns the URL target of the HTTP request
+//    Returns the URI of the HTTP request
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function char[200] httpRequestGetTarget(HttpRequest request) {
-    return request.target;
+define_function char[200] httpRequestGetUri(HttpRequest request) {
+    return request.uri;
 }
 
 /*
@@ -1343,7 +1343,7 @@ define_function httpRequestCopy(HttpRequest copyFrom, HttpRequest copyTo) {
 	integer i;
 	
 	copyTo.method = copyFrom.method;
-	copyTo.target = copyFrom.target;
+	copyTo.uri = copyFrom.uri;
 	copyTo.version = copyFrom.version;
 	
 	for(i=1; i<=length_array(copyFrom.headers); i++) {
@@ -1404,7 +1404,7 @@ define_function httpRequestInit(HttpRequest request) {
 	integer i;
 	
 	request.method = '';
-	request.target = '';
+	request.uri = '';
 	request.version = 0;
 	
 	for(i=1; i<=length_array(request.headers); i++) {

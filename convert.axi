@@ -54,4 +54,65 @@ define_function CHAR[4] ltba(long val) {
 }
 
 
+/*
+	Function: ltle
+
+	Parameters:
+		long val
+
+	Returns:
+		long - 32-bit long in little-endian format
+
+	Description:
+		Takes a long parameter assumed to be in big-endian format and returns a little-endian long.
+*/
+define_function long ltle(long val) {
+    return (((val & $FF) << 24) | ((val & $FF00) << 8) | ((val & $FF0000) >> 8) | ((val & $FF000000) >> 24));
+}
+
+
+/*
+	Function: lcls
+
+	Parameters:
+		long val
+		long shift
+
+	Returns:
+		long - 32-bit long
+
+	Description:
+		Takes a long parameter, val, and a shift value, s, and returns a value which is a circular
+		left shift of the original value, shifted s bits.
+*/
+define_function long lcls(long val, integer s) {
+    if(s <= 32)
+	return ((val << s) | (val >> (32-s)))
+    else
+	return 0;
+}
+
+
+/*
+	Function: lcrs
+
+	Parameters:
+		long val
+		long shift
+
+	Returns:
+		long - 32-bit long
+
+	Description:
+		Takes a long parameter, val, and a shift value, s, and returns a value which is a circular
+		right shift of the original value, shifted s bits.
+*/
+define_function long lcrs(long val, integer s) {
+    if(s <= 32)
+	return ((val << (32-s)) | (val >> (s)))
+    else
+	return 0;
+}
+
+
 #END_IF

@@ -5,7 +5,7 @@ PROGRAM_NAME='sha1'
 // 
 // Description:
 //
-//   - This include file provides a NetLinx implementation of the SHA-1 (Secure Hash Algorithm 1) cryptographic has
+//   - This include file provides a NetLinx implementation of the SHA-1 (Secure Hash Algorithm 1) cryptographic hash
 //     function as defined in RFC 3174 (see https://tools.ietf.org/html/rfc3174)
 //
 // Implementation:
@@ -31,18 +31,28 @@ PROGRAM_NAME='sha1'
 //
 //   - Some example SHA-1 results to test against are as follows (note the results are hex values, not ASCII strings):
 //
-//     sha1('') gives da39a3ee5e6b4b0d3255bfef95601890afd80709
-//     sha1('The quick brown fox jumps over the lazy dog') gives 2fd4e1c67a2d28fced849ee1bb76e7391b93eb12
-//     sha1('The quick brown fox jumps over the lazy cog') gives de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3
-//     sha1('abc') gives a9993e364706816aba3e25717850c26c9cd0d89d
-//     sha1('abcdefghijklmnopqrstuvwxyz') gives 32d10c7b8cf96570ca04ce37f2a19d84240d3a89
-//     sha1('ABCDEFGHIJKLMNOPQRSTUVWXYZ') gives 80256f39a9d308650ac90d9be9a72a9562454574
+//     msg: ''
+//     result: "$da,$39,$a3,$ee,$5e,$6b,$4b,$0d,$32,$55,$bf,$ef,$95,$60,$18,$90,$af,$d8,$07,$09"
+//
+//     msg: 'The quick brown fox jumps over the lazy dog'
+//     result: "$2f,$d4,$e1,$c6,$7a,$2d,$28,$fc,$ed,$84,$9e,$e1,$bb,$76,$e7,$39,$1b,$93,$eb,$12"
+//
+//     msg: 'abc'
+//     result: "$a9,$99,$3e,$36,$47,$06,$81,$6a,$ba,$3e,$25,$71,$78,$50,$c2,$6c,$9c,$d0,$d8,$9d"
+//
+//     msg: 'abcdefghijklmnopqrstuvwxyz'
+//     result: "$32,$d1,$0c,$7b,$8c,$f9,$65,$70,$ca,$04,$ce,$37,$f2,$a1,$9d,$84,$24,$0d,$3a,$89"
+//
+//     msg: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+//     result: "$80,$25,$6f,$39,$a9,$d3,$08,$65,$0a,$c9,$0d,$9b,$e9,$a7,$2a,$95,$62,$45,$45,$74"
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 #include 'binary'
 #include 'convert'
 #include 'string'
+
 
 #IF_NOT_DEFINED __SHA_1__
 #DEFINE __SHA_1__
@@ -50,11 +60,11 @@ PROGRAM_NAME='sha1'
 
 define_constant
 
-BYTE_SIZE_BITS = 8
-WORD_SIZE_BITS = 32
-WORD_SIZE_BYTES = 4
-BLOCK_SIZE_BITS = 512
-BLOCK_SIZE_BYTES = 64
+SHA_1_BYTE_SIZE_BITS = 8
+SHA_1_WORD_SIZE_BITS = 32
+SHA_1_WORD_SIZE_BYTES = 4
+SHA_1_BLOCK_SIZE_BITS = 512
+SHA_1_BLOCK_SIZE_BYTES = 64
 
 
 /*
@@ -73,7 +83,7 @@ BLOCK_SIZE_BYTES = 64
 		Takes a message parameter and returns a 160-bit (20-byte) SHA-1 hash of the message.
 */
 define_function CHAR[20] sha1(char msg[]) {
-	char result[20];
+	char digest[20];
 	char binaryResult[1024];
 	char msgPadded[1048576];
 
@@ -87,33 +97,51 @@ define_function CHAR[20] sha1(char msg[]) {
 
 	long A, B, C, D, E;
 
-	char M[BLOCK_SIZE_BYTES];
+	char M[SHA_1_BLOCK_SIZE_BYTES];
 	long W[80];
+	
+	long lenMsg;
 
 	long TEMP;
-
-	msgPadded = sha1Pad(msg);
-
+	
+	lenMsg = length_array(msg);
+	
+	if((lenMsg % 64) > 55) {	// not enough room to pad in the last 512-bit block will need to pad and then add another 512-bit block
+		msgPadded = "msg,$80";
+		while((length_array(msgPadded) % 64) > 0) {
+			msgPadded = "msgPadded,$00";
+		}
+		while((length_array(msgPadded) % 64) < 56) {	// pad with zeros but leave the last 64-bits alone (reserved for length)
+			msgPadded = "msgPadded,$00";
+		}
+	} else {
+		msgPadded = "msg,$80";
+		while((length_array(msgPadded) % 64) < 56) {	// pad with zeros but leave the last 64-bits alone (reserved for length)
+			msgPadded = "msgPadded,$00";
+		}
+	}
+	msgPadded = "msgPadded,$00,$00,$00,$00,ltba(lenMsg*SHA_1_BYTE_SIZE_BITS)"
+	
 	h0 = $67452301;
 	h1 = $EFCDAB89;
 	h2 = $98BADCFE;
 	h3 = $10325476;
 	h4 = $C3D2E1F0;
 
-	for(mIdx = 1; mIdx < length_array(msgPadded); mIdx=mIdx+BLOCK_SIZE_BYTES) {
+	for(mIdx = 1; mIdx < length_array(msgPadded); mIdx=mIdx+SHA_1_BLOCK_SIZE_BYTES) {
 	
-		M = mid_string(msgPadded,mIdx,BLOCK_SIZE_BYTES);
+		M = mid_string(msgPadded,mIdx,SHA_1_BLOCK_SIZE_BYTES);
 
 		i = 1;
-		for(wIdx = 1; wIdx < length_array(M) ; wIdx = wIdx + WORD_SIZE_BYTES) {
+		for(wIdx = 1; wIdx < length_array(M) ; wIdx = wIdx + SHA_1_WORD_SIZE_BYTES) {
 			stack_var char binary[32];
-			binary = stringToBinary(mid_string(M,wIdx,WORD_SIZE_BYTES));
+			binary = stringToBinary(mid_string(M,wIdx,SHA_1_WORD_SIZE_BYTES));
 			W[i] = binaryToLong(binary);
 			i++;
 		}
 
 		for(t = 17; t <= 80; t++) {
-			W[t] = sha1CircularShift(1,(W[t-3] BXOR W[t-8] BXOR W[t-14] BXOR W[t-16]));
+			W[t] = lcls((W[t-3] BXOR W[t-8] BXOR W[t-14] BXOR W[t-16]),1);
 		}
 
 		A = H0;
@@ -139,10 +167,10 @@ define_function CHAR[20] sha1(char msg[]) {
 				f = (B BXOR C BXOR D)
 				k = $CA62C1D6;
 			}
-			TEMP = sha1CircularShift(5,A) + f + E + W[t] + K;
+			TEMP = lcls(A,5) + f + E + W[t] + K;
 			E = D;
 			D = C;
-			C = sha1CircularShift(30,B);
+			C = lcls(B,30);
 			B = A;
 			A = TEMP;
 		}
@@ -154,45 +182,9 @@ define_function CHAR[20] sha1(char msg[]) {
 		H4 = (H4 + E);
 	}
 
-	binaryResult = "longToBinary(H0),longToBinary(H1),longToBinary(H2),longToBinary(H3),longToBinary(H4)"
-	result = binaryToString(binaryResult);
+	digest = "ltba(H0),ltba(H1),ltba(H2),ltba(H3),ltba(H4)"
 
-	return result;
-}
-
-define_function long sha1CircularShift(integer shift, long word) {
-	stack_var long result;
-
-	result = ((word << shift) | (word >> (32-shift)))
-
-	return result;
-}
-
-define_function CHAR[1048576] sha1Pad(char msg[]) {
-	char result[1048576];
-	long len;
-	long i;
-	long offset;
-
-	len = length_array(msg);
-	
-	if((len % 64) > 55) {	// not enough room to pad in the last 512-bit block will need to pad and then add another 512-bit block
-		result = "msg,$80";
-		while((length_array(result) % 64) > 0) {
-			result = "result,$00";
-		}
-		while((length_array(result) % 64) < 56) {	// pad with zeros but leave the last 64-bits alone (reserved for length)
-			result = "result,$00";
-		}
-	} else {
-		result = "msg,$80";
-		while((length_array(result) % 64) < 56) {	// pad with zeros but leave the last 64-bits alone (reserved for length)
-			result = "result,$00";
-		}
-	}
-	result = "result,$00,$00,$00,$00,ltba(len*BYTE_SIZE_BITS)"
-
-	return result;
+	return digest;
 }
 
 

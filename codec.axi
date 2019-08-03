@@ -43,10 +43,10 @@ define_function char[1024] encode(char scheme[], char data[]) {
 	}
 }
 
-/*define_function char[1024] decode(char scheme[], char data[]) {
+define_function char[1024] decode(char scheme[], char data[]) {
 	switch(scheme) {
 		case 'base64': return base64Decode(data);
 	}
-}*/
+}
 
 #END_IF

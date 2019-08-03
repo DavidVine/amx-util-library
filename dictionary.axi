@@ -68,14 +68,14 @@ DEFINE_FUNCTION integer dictionaryAdd (Dictionary dict, char key[], char val[]) 
 
 	if((key == '') || // empty key
 	   (val == '') || // empty value
-	   (length_array(dict.keyVals) == max_length_array(dict.keyVals)) || // dictionary full
 	   (dictionaryGetValue(dict,key) == val)) // same key/val already stored in dictionary
 		return false;
 
 	if(dictionaryGetIndex(dict,key)) { // the key exists in the dictionary and since we already know it doesn't have the value we want to add we need to replace it
 		dict.keyVals[dictionaryGetIndex(dict,key)].val = val;
-	}
-	else {
+	} else if(length_array(dict.keyVals) == max_length_array(dict.keyVals)) { // dictionary full
+		return false;
+	}	else {
 		set_length_array(dict.keyVals,length_array(dict.keyVals)+1);
 		dict.keyVals[length_array(dict.keyvals)].key = key;
 		dict.keyVals[length_array(dict.keyvals)].val = val;

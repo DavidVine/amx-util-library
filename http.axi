@@ -254,13 +254,13 @@ define_function integer httpParseResponse(HttpResponse response, char buffer[]) 
 	httpStatusLine = remove_string(workingBuffer,"$0d,$0a",1);
 	httpStatusLine = left_string(httpStatusLine,length_string(httpStatusLine)-2);
 	
-	httpResponseSetVersion(tempResponse, atof(httpStatusLine));
+	tempResponse.version = atof(httpStatusLine);
 	
 	remove_string(httpStatusLine,' ',1);
-	httpResponseSetStatusCode(tempResponse, atoi(httpStatusLine));
+	tempResponse.status.code = atoi(httpStatusLine);
 	
 	remove_string(httpStatusLine,' ',1);
-	httpResponseSetStatusMessage(tempResponse, httpStatusLine);
+	tempResponse.status.message = httpStatusLine;
 	
 	if(!find_string(workingBuffer,"$0d,$0a,$0d,$0a",1)) {
 		return false;
@@ -278,15 +278,15 @@ define_function integer httpParseResponse(HttpResponse response, char buffer[]) 
 		headerName = remove_string(headerLine,"':'",1);
 		headerName = left_string(headerName,length_string(headerName)-1);
 		headerValue = right_string(headerLine,length_string(headerLine)-1);
-		httpResponseSetHeader(tempResponse,headerName,headerValue);
+		httpSetHeader(tempResponse.headers,headerName,headerValue);
 	}
 	
-	if(httpResponseHasHeader(tempResponse,'Transfer-Encoding')) {
+	if(httpHasHeader(tempResponse.headers,'Transfer-Encoding')) {
 		char values[20][1024];
 		integer i;
 		integer isChunked;
 		
-		httpResponseGetHeaderValues(tempResponse,'Transfer-Encoding',values);
+		httpGetHeaderValues(tempResponse.headers,'Transfer-Encoding',values);
 		
 		for(i=1; i<=length_array(values); i++) {
 		
@@ -297,8 +297,8 @@ define_function integer httpParseResponse(HttpResponse response, char buffer[]) 
 					return false;
 				}
 				else {
-					httpResponseSetBody(tempResponse,remove_string(workingBuffer,"$0D,$0A,'0',$0D,$0A,$0D,$0A",1));
-					httpResponseCopy(tempResponse,response);
+					tempResponse.body = remove_string(workingBuffer,"$0D,$0A,'0',$0D,$0A,$0D,$0A",1);
+					httpCopyResponse(tempResponse,response);
 					buffer = right_string(buffer,length_array(workingBuffer));
 					return true;
 				}
@@ -309,13 +309,13 @@ define_function integer httpParseResponse(HttpResponse response, char buffer[]) 
 			return false;
 		}
 	}
-	else if(httpResponseHasHeader(tempResponse,'Content-Length')) {
+	else if(httpHasHeader(tempResponse.headers,'Content-Length')) {
 		long contentLength;
 		long bytesRemainingInBuffer;
 		char values[20][1024];
 		integer i;
 		
-		httpResponseGetHeaderValues(tempResponse,'Content-Length',values);
+		httpGetHeaderValues(tempResponse.headers,'Content-Length',values);
 		contentLength = atoi(values[1]);
 		
 		if(length_array(workingBuffer)<contentLength) {
@@ -323,13 +323,13 @@ define_function integer httpParseResponse(HttpResponse response, char buffer[]) 
 			return false;
 		}
 		
-		httpResponseSetBody(tempResponse,get_buffer_string(workingBuffer,contentLength));
-		httpResponseCopy(tempResponse,response);
+		tempResponse.body = get_buffer_string(workingBuffer,contentLength);
+		httpCopyResponse(tempResponse,response);
 		buffer = right_string(buffer,length_array(workingBuffer));
 		return true;
 	}
 	else {
-		httpResponseCopy(tempResponse,response);
+		httpCopyResponse(tempResponse,response);
 		buffer = right_string(buffer,length_array(workingBuffer));
 		return true;
 	}
@@ -485,50 +485,6 @@ define_function httpResponseToDebug(HttpResponse response) {
 	AMX_LOG(AMX_DEBUG,'----- END HTTP RESPONSE -----');
 }
 
-/*
-HTTP Header Specific Functions
-*/
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpRequestSetHeader
-//
-// Parameters:
-//    HttpRequest request   -   HTTP request object
-//    char[] name           -   name of HTTP header
-//    char[] value          -   value of HTTP header
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Assigns a header to a HTTP request object
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpRequestSetHeader(HttpRequest request, char name[], char value[]) {
-	httpSetHeader(request.headers, name, value);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseSetHeader
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//    char[] name             -   name of HTTP header
-//    char[] value            -   value of HTTP header
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Assigns a header to a HTTP response object
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpResponseSetHeader(HttpResponse response, char name[], char value[]) {
-	httpSetHeader(response.headers, name, value);
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
 // Function: httpSetHeader
@@ -565,42 +521,30 @@ define_function httpSetHeader(HttpHeader headers[], char name[], char value[]) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpRequestGetHeaderValues
+// Function: httpGetHeader
 //
 // Parameters:
-//    HttpRequest request   -   HTTP request object
-//    char[] name           -   name of header
-//    char[][] value        -   2-dimensional character array to store HTTP header values
+//    HttpHeader[] headers   -   HTTP headers array
+//    char[] name            -   name of HTTP header
+//    char[][] value         -   2-dimensional character array to store HTTP header values
 //
 // Returns:
-//    nothing
+//    char[]   -   value of header
 //
 // Description:
-//    Searches for any instances of a specified header in a HTTP request object and populates the provided values array
+//    Searches for and returns the value of the first instances of a specified header in a HTTP headers array
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpRequestGetHeaderValues(HttpRequest request, char name[], char values[][]) {
-	httpGetHeaderValues(request.headers,name,values);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseGetHeaderValues
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//    char[] name             -   name of HTTP header
-//    char[][] value          -   2-dimensional character array to store HTTP header values
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Searches for any instances of a specified header in a HTTP response object and populates the provided values array
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpResponseGetHeaderValues(HttpResponse response, char name[], char values[][]) {
-	httpGetHeaderValues(response.headers,name,values);
+define_function char[1024] httpGetHeader(HttpHeader headers[], char name[]) {
+	integer i;
+	
+	for(i=1; i<=length_array(headers); i++) {
+		if(lower_string(headers[i].name) == lower_string(name)) {
+			return headers[i].value;
+		}
+	}
+	
+	return "";
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -632,50 +576,6 @@ define_function httpGetHeaderValues(HttpHeader headers[], char name[], char valu
 			values[length_array(values)] = headers[i].value;
 		}
 	}
-} 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpRequestRemoveHeader
-//
-// Parameters:
-//    HttpRequest request        -   HTTP request object
-//    char[] name                -   name of HTTP header
-//    integer removeAllMatches   -   boolean value indicating whether all instances of matching HTTP header should be 
-//                                   removed
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Removes either the first instance of a specified HTTP header from a HTTP request object or all instances of the
-//    specified header, dependent on true / false indicator supplied
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpRequestRemoveHeader(HttpRequest request, char name[], integer removeAllMatches) {
-	httpRemoveHeader(request.headers, name, removeAllMatches);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseRemoveHeader
-//
-// Parameters:
-//    HttpResponse response      -   HTTP response object
-//    char[] name                -   name of HTTP header
-//    integer removeAllMatches   -   boolean value indicating whether all instances of matching HTTP header should be 
-//                                   removed
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Removes either the first instance of a specified HTTP header from a HTTP response object or all instances of the
-//    specified header, dependent on true / false indicator supplied
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpResponseRemoveHeader(HttpResponse response, char name[], integer removeAllMatches) {
-	httpRemoveHeader(response.headers, name, removeAllMatches);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -727,46 +627,6 @@ define_function httpRemoveHeader(HttpHeader headers[], char name[], integer remo
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpRequestHasHeader
-//
-// Parameters:
-//    HttpRequest request   -   HTTP request object
-//    char[] name           -   name of HTTP header
-//
-// Returns:
-//    integer   -   boolean (true/false) value indicating whether specified HTTP header was found
-//
-// Description:
-//    Searches HTTP request object for the existence of the specified HTTP header and returns a true/false value 
-//    depending on the result 
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function integer httpRequestHasHeader(HttpRequest request, char name[]) {
-	return httpHasHeader(request.headers, name);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseHasHeader
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//    char[] name             -   name of HTTP header
-//
-// Returns:
-//    integer   -   boolean (true/false) value indicating whether specified HTTP header was found
-//
-// Description:
-//    Searches HTTP response object for the existence of the specified HTTP header and returns a true/false value 
-//    depending on the result 
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function integer httpResponseHasHeader(HttpResponse response, char name[]) {
-	return httpHasHeader(response.headers, name);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
 // Function: httpHasHeader
 //
 // Parameters:
@@ -795,42 +655,6 @@ define_function integer httpHasHeader(HttpHeader headers[], char name[]) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpRequestGetHeaderNames
-//
-// Parameters:
-//    HttpRequest request   -   HTTP request object
-//
-// Returns:
-//    char[20][100]   - 2-dimensional character array containing list of HTTP header names
-//
-// Description:
-//    Returns a list containing the names of all HTTP headers contained in the HTTP request object
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function char[20][100] httpRequestGetHeaderNames(HttpRequest request) {
-	#warn '@todo: implement httpRequestGetHeaderNames method'
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseGetHeaderNames
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//
-// Returns:
-//    char[20][100]   - 2-dimensional character array containing list of HTTP header names
-//
-// Description:
-//    Returns a list containing the names of all HTTP headers contained in the HTTP response object
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function char[20][100] httpResponseGetHeaderNames(HttpResponse response) {
-	#warn '@todo: implement httpResponseGetHeaderNames method'
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
 // Function: httpGetHeaderNames
 //
 // Parameters:
@@ -848,349 +672,12 @@ define_function char[20][100] httpGetHeaderNames(HttpHeader headers[]) {
 }
 
 /*
-HTTP Response Status Specific Functions
-*/
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseGetStatusCode
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//
-// Returns:
-//    integer   -   status code
-//
-// Description:
-//    Returns the status code of the HTTP response
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function integer httpResponseGetStatusCode(HttpResponse response) {
-    return response.status.code;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseGetStatusMessage
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//
-// Returns:
-//    char[100]   -   status message
-//
-// Description:
-//    Returns the status message of the HTTP response
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function char[100] httpResponseGetStatusMessage(HttpResponse response) {
-    return response.status.message;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseSetStatusCode
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//    integer code            -   status code
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Assigns a status code to the HTTP response
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpResponseSetStatusCode(HttpResponse response, integer code) {
-    response.status.code = code;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseSetStatusMessage
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//    char[] message          -   status message
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Assigns a status message to the HTTP response
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpResponseSetStatusMessage(HttpResponse response, char message[]) {
-    response.status.message = message;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseSetStatus
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//    integer code            -   status code
-//    char[] message          -   status message
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Assigns a status (code and message) to the HTTP response
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpResponseSetStatus(HttpResponse response, integer code, char message[]) {
-    response.status.code = code;
-    response.status.message = message;
-}
-
-/*
-HTTP Version Specific Functions
-*/
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseSetVersion
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//    float version           -   HTTP version
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Assigns a HTTP version to the HTTP response
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpResponseSetVersion(HttpResponse response, float version) {
-    response.version = version;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseSetVersion
-//
-// Parameters:
-//    HttpRequest request   -   HTTP request object
-//    float version         -   HTTP version
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Assigns a HTTP version to the HTTP request
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpRequestSetVersion(HttpRequest request, float version) {
-    request.version = version;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseGetVersion
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//
-// Returns:
-//    float   -   HTTP version
-//
-// Description:
-//    Returns the HTTP version of the HTTP response
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function float httpResponseGetVersion(HttpResponse response) {
-    return response.version;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpRequestGetVersion
-//
-// Parameters:
-//    HttpRequest request   -   HTTP request object
-//
-// Returns:
-//    float   -   HTTP version
-//
-// Description:
-//    Returns the HTTP version of the HTTP request
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function float httpRequestGetVersion(HttpRequest request) {
-    return request.version;
-}
-
-/*
-HTTP Body Specific Functions
-*/
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseSetBody
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//    char[] body             -   body of HTTP message
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Assigns a string to the body of the HTTP response
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpResponseSetBody(HttpResponse response, char body[]) {
-    response.body = body;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpRequestSetBody
-//
-// Parameters:
-//    HttpRequest request   -   HTTP request object
-//    char[] body           -   body of HTTP message
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Assigns a string to the body of the HTTP request
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpRequestSetBody(HttpRequest request, char body[]) {
-    request.body = body;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpResponseGetBody
-//
-// Parameters:
-//    HttpResponse response   -   HTTP response object
-//
-// Returns:
-//    char[]   -   body of HTTP response
-//
-// Description:
-//    Returns the body of the HTTP response
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function char[HTTP_MAX_BODY_LENGTH] httpResponseGetBody(HttpResponse response) {
-    return response.body;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpRequestGetBody
-//
-// Parameters:
-//    HttpRequest request   -   HTTP request object
-//
-// Returns:
-//    char[]   -   body of HTTP request
-//
-// Description:
-//    Returns the body of the HTTP request
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function char[HTTP_MAX_BODY_LENGTH] httpRequestGetBody(HttpRequest request) {
-    return request.body;
-}
-
-/*
-HTTP Request URI Specific Functions
-*/
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpRequestSetUri
-//
-// Parameters:
-//    HttpRequest request   -   HTTP request object
-//    char[] uri            -   request URI
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Assigns a URI to the HTTP request
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpRequestSetUri(HttpRequest request, char uri[]) {
-    request.uri = uri;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpRequestGetUri
-//
-// Parameters:
-//    HttpRequest request   -   HTTP request object
-//
-// Returns:
-//    char[]   -   request URI
-//
-// Description:
-//    Returns the URI of the HTTP request
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function char[200] httpRequestGetUri(HttpRequest request) {
-    return request.uri;
-}
-
-/*
-HTTP Request Method Specific Functions
-*/
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpRequestGetMethod
-//
-// Parameters:
-//    HttpRequest request   -   HTTP request object
-//
-// Returns:
-//    char[]   -   HTTP method
-//
-// Description:
-//    Returns the method of the HTTP request
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function char[10] httpRequestGetMethod(HttpRequest request) {
-    return request.method;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Function: httpRequestSetMethod
-//
-// Parameters:
-//    HttpRequest request   -   HTTP request object
-//    char[] method         -   HTTP method
-//
-// Returns:
-//    nothing
-//
-// Description:
-//    Sets the method of the HTTP request
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpRequestSetMethod(HttpRequest request, char method[]) {
-    request.method = method;
-}
-
-/*
 HTTP Authentication Header Functions
 */
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpCreateBasicAuthenticationHeader
+// Function: httpBasicAuthentication
 //
 // Parameters:
 //    char[] username   -   user name
@@ -1203,7 +690,7 @@ HTTP Authentication Header Functions
 //    Return the value for a HTTP Authentication header using basic authentication
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function char[1024] httpCreateBasicAuthenticationHeader(char username[], char password[]) {
+define_function char[1024] httpBasicAuthentication(char username[], char password[]) {
     stack_var char auth[1024];
     
     auth = "'Basic ',base64Encode("username,':',password")"
@@ -1213,7 +700,7 @@ define_function char[1024] httpCreateBasicAuthenticationHeader(char username[], 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpCreateDigestAuthenticationHeader
+// Function: httpDigestAuthentication
 //
 // Parameters:
 //    char[] method       -   digest method
@@ -1236,11 +723,11 @@ define_function char[1024] httpCreateBasicAuthenticationHeader(char username[], 
 //    Return the value for a HTTP Authentication header using digest authentication
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function char[1024] httpCreateDigestAuthenticationHeader(char method[], char requestUri[], char realm[],
-                                                                char username[], char password[],
-                                                                char nonce[], char cnonce[30], char nc[8],
-                                                                char qop[], char algorithm[],
-                                                                char opaque[], char entityBody[]) {
+define_function char[1024] httpDigestAuthentication(char method[], char requestUri[], char realm[],
+                                                    char username[], char password[],
+                                                    char nonce[], char cnonce[30], char nc[8],
+                                                    char qop[], char algorithm[],
+                                                    char opaque[], char entityBody[]) {
     stack_var char HA1_hex[16], HA2_hex[16], response_hex[16];
     stack_var char HA1_str[32], HA2_str[32], response_str[32];
     stack_var char auth[1024];
@@ -1326,7 +813,7 @@ define_function char[1024] httpCreateDigestAuthenticationHeader(char method[], c
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpRequestCopy
+// Function: httpCopyRequest
 //
 // Parameters:
 //    HttpRequest copyFrom   -   HTTP request object
@@ -1339,11 +826,11 @@ define_function char[1024] httpCreateDigestAuthenticationHeader(char method[], c
 //    Makes a direct copy of a HTTP request object
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpRequestCopy(HttpRequest copyFrom, HttpRequest copyTo) {
+define_function httpCopyRequest(HttpRequest copyFrom, HttpRequest copyTo) {
 	integer i;
 	
 	copyTo.method = copyFrom.method;
-	copyTo.uri = copyFrom.uri;
+	copyTo.requestUri = copyFrom.requestUri;
 	copyTo.version = copyFrom.version;
 	
 	for(i=1; i<=length_array(copyFrom.headers); i++) {
@@ -1357,7 +844,7 @@ define_function httpRequestCopy(HttpRequest copyFrom, HttpRequest copyTo) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpResponseCopy
+// Function: httpCopyResponse
 //
 // Parameters:
 //    HttpResponse copyFrom   -   HTTP response object
@@ -1370,7 +857,7 @@ define_function httpRequestCopy(HttpRequest copyFrom, HttpRequest copyTo) {
 //    Makes a direct copy of a HTTP response object
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpResponseCopy(HttpResponse copyFrom, HttpResponse copyTo) {
+define_function httpCopyResponse(HttpResponse copyFrom, HttpResponse copyTo) {
 	integer i;
 	
 	copyTo.version = copyFrom.version;
@@ -1388,7 +875,7 @@ define_function httpResponseCopy(HttpResponse copyFrom, HttpResponse copyTo) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpRequestInit
+// Function: httpInitRequest
 //
 // Parameters:
 //    HttpRequest request   -   HTTP request object
@@ -1400,11 +887,11 @@ define_function httpResponseCopy(HttpResponse copyFrom, HttpResponse copyTo) {
 //    Initializes a HTTP request and clears all stored values
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpRequestInit(HttpRequest request) {
+define_function httpInitRequest(HttpRequest request) {
 	integer i;
 	
 	request.method = '';
-	request.uri = '';
+	request.requestUri = '';
 	request.version = 0;
 	
 	for(i=1; i<=length_array(request.headers); i++) {
@@ -1418,7 +905,7 @@ define_function httpRequestInit(HttpRequest request) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Function: httpResponseInit
+// Function: httpInitResponse
 //
 // Parameters:
 //    HttpResponse response   -   HTTP response object
@@ -1430,7 +917,7 @@ define_function httpRequestInit(HttpRequest request) {
 //    Initializes a HTTP response and clears all stored values
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function httpResponseInit(HttpResponse response) {
+define_function httpInitResponse(HttpResponse response) {
 	integer i;
 	
 	response.version = 0;

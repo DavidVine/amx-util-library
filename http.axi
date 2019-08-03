@@ -26,7 +26,7 @@ struct HttpHeader {
 struct HttpRequest {
     float version;
     char method[10];
-    char uri[200];
+    char requestUri[200];
     HttpHeader headers[20];
     char body[HTTP_MAX_BODY_LENGTH];
 }
@@ -373,7 +373,7 @@ define_function char[HTTP_MAX_MESSAGE_LENGTH] httpRequestToString(HttpRequest re
     char http[1024];
     integer i;
     
-    http = "request.method,' ',uriPercentEncodeString(request.uri),' HTTP/',format('%.1f',request.version),$0d,$0a"
+    http = "request.method,' ',uriPercentEncodeString(request.requestUri),' HTTP/',format('%.1f',request.version),$0d,$0a"
     
     for(i=1; i<=length_array(request.headers); i++) {
 		http = "http,request.headers[i].name,': ',request.headers[i].value,$0d,$0a";
@@ -405,7 +405,7 @@ define_function httpRequestToDebug(HttpRequest request) {
 	
 	AMX_LOG(AMX_DEBUG,'----- BEGIN HTTP REQUEST -----');
     
-    AMX_LOG(AMX_DEBUG,"request.method,' ',uriPercentEncodeString(request.uri),' HTTP/',format('%.1f',request.version)");
+    AMX_LOG(AMX_DEBUG,"request.method,' ',uriPercentEncodeString(request.requestUri),' HTTP/',format('%.1f',request.version)");
     
     for(i=1; i<=length_array(request.headers); i++) {
 		AMX_LOG(AMX_DEBUG,"request.headers[i].name,': ',request.headers[i].value");

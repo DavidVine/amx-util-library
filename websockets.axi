@@ -946,6 +946,11 @@ data_event[wsSockets] {
 				}
 			} else if(wsf.opCode == WEBSOcKET_OPCODE_BIN) {
 				print("'Data received on Socket[',devToString(socket),'] is WebSocket binary.'",false);
+				if(wsf.mask) {
+					webSocketOnMessage(socket,webSocketUnmask(wsf.payloadData,wsf.maskingKey));
+				} else {
+					webSocketOnMessage(socket,wsf.payloadData);
+				}
 			} else if(wsf.opCode == WEBSOCKET_OPCODE_CONT) {
 				print("'Data received on Socket[',devToString(socket),'] is WebSocket continuation.'",false);
 			} else if(wsf.opCode == WEBSOCKET_OPCODE_PING) {

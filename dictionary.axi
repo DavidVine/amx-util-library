@@ -113,18 +113,17 @@ DEFINE_FUNCTION integer dictionaryRemove (Dictionary dict, char key[]) {
 	   (!idx)) // key does not exist in dictionary
 		return false;
 
-	while(idx <= length_array(dict.keyVals)) {
-		if(idx == length_array(dict.keyVals)) {
-			dict.keyVals[idx].key = '';
-			dict.keyVals[idx].val = '';
-			set_length_array(dict.keyVals,length_array(dict.keyVals)-1);
-		}
-		else {
-			dict.keyVals[idx].key = dict.keyVals[idx+1].key;
-			dict.keyVals[idx].val = dict.keyVals[idx+1].val;
-		}
-		idx++;
+	if(idx < length_array(dict.keyVals)) {
+		dict.keyVals[idx].key = dict.keyVals[length_array(dict.keyVals)].key;
+		dict.keyVals[idx].val = dict.keyVals[length_array(dict.keyVals)].val;
+		dict.keyVals[length_array(dict.keyVals)].key = '';
+		dict.keyVals[length_array(dict.keyVals)].val = '';
 	}
+	else {
+		dict.keyVals[idx].key = '';
+		dict.keyVals[idx].val = '';
+	}
+	set_length_array(dict.keyVals,length_array(dict.keyVals)-1);
 
 	return true;
 }

@@ -65,14 +65,17 @@ struct Dictionary {
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DEFINE_FUNCTION integer dictionaryAdd (Dictionary dict, char key[], char val[]) {
+	stack_var integer idx;
 
 	if((key == '') || // empty key
 	   (val == '') || // empty value
 	   (dictionaryGetValue(dict,key) == val)) // same key/val already stored in dictionary
 		return false;
+	
+	idx = dictionaryGetIndex(dict, key);
 
-	if(dictionaryGetIndex(dict,key)) { // the key exists in the dictionary and since we already know it doesn't have the value we want to add we need to replace it
-		dict.keyVals[dictionaryGetIndex(dict,key)].val = val;
+	if(idx) { // the key exists in the dictionary and since we already know it doesn't have the value we want to add we need to replace it
+		dict.keyVals[idx].val = val;
 	} else if(length_array(dict.keyVals) == max_length_array(dict.keyVals)) { // dictionary full
 		return false;
 	}	else {

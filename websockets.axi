@@ -542,9 +542,14 @@ define_function char [1024] webSocketFrameToString(WebSocketFrame wsf) {
 //    is parsed and the WebSocketFrame parameter (wsf) is updated to contain the values obtained during the parsing.
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-define_function webSocketFrameFromString(WebSocketFrame wsf, char data[]) {
+define_function sinteger webSocketFrameFromString(WebSocketFrame wsf, char data[]) {
 	long payloadLen;
 	integer nByte;
+	
+	if(length_array(data) < 2) {
+	    print("'webSocketFrameFromString exiting, data is less than 2 bytes'",false);
+	    return -1;
+	}
 
 	wsf.fin = 0;
 	wsf.rsv1 = 0;
@@ -580,10 +585,33 @@ define_function webSocketFrameFromString(WebSocketFrame wsf, char data[]) {
 
 	if(wsf.mask) {
 		wsf.maskingKey = "data[nByte],data[nByte+1],data[nByte+2],data[nByte+3]";
+		
+		if((payloadLen != 0) && (length_array(data) < (nByte+4+payloadLen-1))) {
+		    print("'webSocketFrameFromString exiting, payload following masking key not complete'",false);
+		    return -1;
+		}
+	
 		wsf.payloadData = webSocketUnmask(mid_string(data,nByte+4,payloadLen),wsf.maskingKey);
 	} else {
+	
+		if((payloadLen != 0) && (length_array(data) < (nByte+payloadLen-1))) {
+		    print("'webSocketFrameFromString exiting, payload not complete'",false);
+		    return -1;
+		}
+		
 		wsf.payloadData = mid_string(data,nByte,payloadLen);
 	}
+	
+	if(wsf.payloadData == 0) {
+		remove_string(data,"data[1],data[2]",1)
+	}
+	else {
+		remove_string(data,wsf.payloadData,1);
+	}
+	
+	print("'webSocketFrameFromString processed complete WebSocket Frame'",false);
+	
+	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

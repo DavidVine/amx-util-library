@@ -452,7 +452,7 @@ define_function webSocketSend(dev socket, char data[]) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function webSocketClose(dev socket, integer code, char reason[]) {
 	stack_var integer idx;
-	
+
 	for(idx=1; idx<=length_array(wsSockets); idx++) {
 		if(socket == wsSockets[idx]) {
 			if ((webSockets[idx].readyState != CLOSED) && (webSockets[idx].readyState != CLOSING)) {
@@ -580,10 +580,9 @@ define_function sinteger webSocketFrameFromString(WebSocketFrame wsf, char data[
 		nByte = 5;
 	} else if((data[2] BAND $7F) == 127) {
 		payloadLen = ((data[3] << 56) BOR (data[4] << 48) BOR (data[5] << 40) BOR (data[6] << 32) 
-									BOR (data[7] << 24) BOR (data[8] << 16) BOR (data[9] << 8) BOR (data[10]));
+		             BOR (data[7] << 24) BOR (data[8] << 16) BOR (data[9] << 8) BOR (data[10]));
 		nByte = 11;
 	}
-
 	if(wsf.mask) {
 		wsf.maskingKey = "data[nByte],data[nByte+1],data[nByte+2],data[nByte+3]";
 		

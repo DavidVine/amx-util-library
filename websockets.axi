@@ -224,6 +224,7 @@ struct WebSocket {
 	char subprotocols[50];       // Sub-protocols
 	char clientHandshakeKey[24]; // Sec-WebSocket-Key value for HTTP Opening Handshake
 	char sessionId[200];
+	char receiveBuffer[20000];
 }
 
 struct WebSocketFrame {
@@ -234,7 +235,7 @@ struct WebSocketFrame {
 	char opCode;
 	char mask;
 	char maskingKey[4];
-	char payloadData[5000]; // payload length can be determined from calling length_array or lenth_string for payloadData
+	char payloadData[20000]; // payload length can be determined from calling length_array or lenth_string for payloadData
 }
 
 
@@ -920,6 +921,8 @@ data_event[wsSockets] {
 		socket = wsSockets[idx];
 
 		print("'Socket (',devToString(socket),') Open on port ',itoa(data.sourceport)",false);
+		
+		clear_buffer webSockets[idx].receiveBuffer
 
 		webSocketSendOpenHandshake(socket);
 	}
@@ -932,6 +935,8 @@ data_event[wsSockets] {
 		socket = wsSockets[idx];
 
 		print("'Socket (',devToString(socket),') Closed'",false);
+		
+		clear_buffer webSockets[idx].receiveBuffer
 
 		webSockets[idx].readyState = CLOSED;
 		webSocketOnClose(socket);
@@ -963,41 +968,62 @@ data_event[wsSockets] {
 
 		print("'Received data (',itoa(length_array(data.text)),' bytes) on Socket[',devToString(socket),'].'",false);
 
+		webSockets[idx].receiveBuffer = "webSockets[idx].receiveBuffer,data.text"
+
 		if((webSockets[idx].readyState == OPEN) || (webSockets[idx].readyState == CLOSING)) { // assume we received a websocket protocol string
-			webSocketFrameFromString(wsf,data.text);
-			if(wsf.opCode == WEBSOCKET_OPCODE_TEXT) {
-				print("'Data received on Socket[',devToString(socket),'] is WebSocket text.'",false);
-				if(wsf.mask) {
-					webSocketOnMessage(socket,webSocketUnmask(wsf.payloadData,wsf.maskingKey));
-				} else {
-					webSocketOnMessage(socket,wsf.payloadData);
-				}
-			} else if(wsf.opCode == WEBSOcKET_OPCODE_BIN) {
-				print("'Data received on Socket[',devToString(socket),'] is WebSocket binary.'",false);
-				if(wsf.mask) {
-					webSocketOnMessage(socket,webSocketUnmask(wsf.payloadData,wsf.maskingKey));
-				} else {
-					webSocketOnMessage(socket,wsf.payloadData);
-				}
-			} else if(wsf.opCode == WEBSOCKET_OPCODE_CONT) {
-				print("'Data received on Socket[',devToString(socket),'] is WebSocket continuation.'",false);
-			} else if(wsf.opCode == WEBSOCKET_OPCODE_PING) {
-				print("'Data received on Socket[',devToString(socket),'] is WebSocket ping. Sending pong in response.'",false);
-				webSocketSendPong(socket,wsf.payloadData); // pong must contain same "appication data" as received ping
-			} else if(wsf.opCode == WEBSOCKET_OPCODE_PONG) {
-				print("'Data received on Socket[',devToString(socket),'] is WebSocket pong.'",false);
-			} else if(wsf.opCode == WEBSOCKET_OPCODE_CLOSE) {
-				print("'Data received on Socket[',devToString(socket),'] is WebSocket close.'",false);
-				webSockets[idx].readyState = CLOSING;
+
+			while(webSocketFrameFromString(wsf,webSockets[idx].receiveBuffer) == 0) {
+
+			    print("'Successfully built WebSocket Frame from string'",false);
+
+			    if(wsf.opCode == WEBSOCKET_OPCODE_TEXT) {
+				    print("'Data received on Socket[',devToString(socket),'] is WebSocket text.'",false);
+				    if(wsf.mask) {
+					    webSocketOnMessage(socket,webSocketUnmask(wsf.payloadData,wsf.maskingKey));
+				    } else {
+					    webSocketOnMessage(socket,wsf.payloadData);
+				    }
+			    } else if(wsf.opCode == WEBSOcKET_OPCODE_BIN) {
+				    print("'Data received on Socket[',devToString(socket),'] is WebSocket binary.'",false);
+				    if(wsf.mask) {
+					    webSocketOnMessage(socket,webSocketUnmask(wsf.payloadData,wsf.maskingKey));
+				    } else {
+					    webSocketOnMessage(socket,wsf.payloadData);
+				    }
+			    } else if(wsf.opCode == WEBSOCKET_OPCODE_CONT) {
+				    print("'Data received on Socket[',devToString(socket),'] is WebSocket continuation.'",false);
+				    if(wsf.mask) {
+					    webSocketOnMessage(socket,webSocketUnmask(wsf.payloadData,wsf.maskingKey));
+				    } else {
+					    webSocketOnMessage(socket,wsf.payloadData);
+				    }
+			    } else if(wsf.opCode == WEBSOCKET_OPCODE_PING) {
+				    print("'Data received on Socket[',devToString(socket),'] is WebSocket ping. Sending pong in response.'",false);
+				    webSocketSendPong(socket,wsf.payloadData); // pong must contain same "appication data" as received ping
+			    } else if(wsf.opCode == WEBSOCKET_OPCODE_PONG) {
+				    print("'Data received on Socket[',devToString(socket),'] is WebSocket pong.'",false);
+			    } else if(wsf.opCode == WEBSOCKET_OPCODE_CLOSE) {
+				    print("'Data received on Socket[',devToString(socket),'] is WebSocket close.'",false);
+				    webSockets[idx].readyState = CLOSING;
+			    }
+			    else {
+				    print("'Data received on Socket[',devToString(socket),'] unhandled.'",false);
+			    }
+
+			    if(length_string(webSockets[idx].receiveBuffer) == 0) {
+				break;
+			    }
 			}
-			
+
+			print("itoa(length_array(webSockets[idx].receiveBuffer)),' bytes remain in receive buffer unprocessed.'",false);
 		} else {	// assume we received a HTTP protocol string
 			char expectedWebSocketAcceptValue[1024]
 			stack_var char sessionIdHeader[50];
 			stack_var char cookie[100];
 
 			print("'Data received on Socket[',devToString(socket),'] is HTTP:'",false);
-			httpParseResponse(response, data.text);
+			httpParseResponse(response, webSockets[idx].receiveBuffer);
+			clear_buffer webSockets[idx].receiveBuffer
 			print(httpResponseToString(response),true);
 
 			expectedWebSocketAcceptValue = webSocketCreateHandshakeKeyServer(webSockets[idx].clientHandshakeKey);

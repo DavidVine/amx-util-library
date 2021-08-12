@@ -27,6 +27,20 @@ integer EPOCH_MINUTE = 0;
 integer EPOCH_SECOND = 0;
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: secondsSinceEpoch
+//
+// Parameters:
+//    none
+//
+// Returns:
+//    slong   -   Seconds since epoch.
+//
+// Description:
+//    Returns the number of seconds that have passed since epoch (00:00:00 1/1/1970).
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function slong secondsSinceEpoch() {
 	char currentTime[8];
 	DateTime currentDateTime;
@@ -40,6 +54,20 @@ define_function slong secondsSinceEpoch() {
 	return (daysSinceEpoch() * 24 * 60 * 60) + (currentDateTime.hh * 60 * 60) + (currentDateTime.mm * 60) + currentDateTime.ss;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: daysSinceEpoch
+//
+// Parameters:
+//    none.
+//
+// Returns:
+//    slong   -   Days since epoch.
+//
+// Description:
+//    Returns the number of days that have passed since epoch (00:00:00 1/1/1970).
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function slong daysSinceEpoch() {
 	char currentDate[10];
 	DateTime currentDateTime;
@@ -89,6 +117,20 @@ define_function slong daysSinceEpoch() {
 	
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: isLeapYear
+//
+// Parameters:
+//    integer year   -   The year to test.
+//
+// Returns:
+//    integer   -   boolean value (0==false | 1==true).
+//
+// Description:
+//    Tests if the specified calendar year is a leap year and returns a boolean result.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function integer isLeapYear(integer year) {
 	if((year % 4) == 0) {
 		return false;

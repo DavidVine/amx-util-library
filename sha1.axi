@@ -66,21 +66,23 @@ SHA_1_BLOCK_SIZE_BITS = 512
 SHA_1_BLOCK_SIZE_BYTES = 64
 
 
-/*
-	Function: sha1
-
-	Parameters:
-		char msg[]
-
-	Returns:
-		char[20] - 160-bit SHA-1 message digest
-
-	Description:
-		This is a NetLinx implemntation of the SHA-1 message digest algorithm as described in RFC3174 (see
-		https://tools.ietf.org/html/rfc3174).
-
-		Takes a message parameter and returns a 160-bit (20-byte) SHA-1 hash of the message.
-*/
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: sha1
+//
+// Parameters:
+//    char msg[]   -   Data to hash.
+//
+// Returns:
+//    char[20]   -   160-bit SHA-1 message digest.
+//
+// Description:
+//    This is a NetLinx implemntation of the SHA-1 message digest algorithm as described in RFC3174 (see 
+//    https://tools.ietf.org/html/rfc3174).
+//
+//    Takes a message parameter and returns a 160-bit (20-byte) SHA-1 hash of the message.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function CHAR[20] sha1(char msg[]) {
 	char digest[20];
 	char binaryResult[1024];

@@ -41,6 +41,20 @@ char BASE64_ALPHABET[64]    = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvw
 char BASE64URL_ALPHABET[64] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 char BASE64_PAD = '=';
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: base64ReverseAlphabetLookup
+//
+// Parameters:
+//    char encodedVal   -   An 8-bit base64 encoded ASCII value.
+//
+// Returns:
+//    char   -   An 8-bit byte containing a 6-bit value.
+//
+// Description:
+//    Converts an 8-bit base64 encoded ASCII value back to the original 6-bit data value.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char base64ReverseAlphabetLookup(char encodedVal)
 {
 	char c;
@@ -58,11 +72,39 @@ define_function char base64ReverseAlphabetLookup(char encodedVal)
 	return 0;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: base64AlphabetLookup
+//
+// Parameters:
+//    char val   -   An 8-bit byte containing a 6-bit value.
+//
+// Returns:
+//    char   -   A base-64 encoded ASCII value.
+//
+// Description:
+//    Converts a 6-bit data value to an 8-bit base64 encoded ASCII value.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char base64AlphabetLookup(char val) {
 	if(val > 63) return type_cast('');
 	return BASE64_ALPHABET[val+1];
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: base64UrlAlphabetLookup
+//
+// Parameters:
+//    char val   -   An 8-bit byte containing a 6-bit value.
+//
+// Returns:
+//    char   -   A base-64 URL encoded ASCII value.
+//
+// Description:
+//    Converts a 6-bit data value to an 8-bit base64 URL encoded ASCII value.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char base64UrlAlphabetLookup(char val) {
 	if(val > 63) return type_cast('');
 	return BASE64URL_ALPHABET[val+1];
@@ -178,6 +220,20 @@ define_function char[1024] base64UrlEncode(char data[], integer pad) {
 	return encodedData;	
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: base64Decode
+//
+// Parameters:
+//    char encodedData[]   -   A string of base-64 encoded data.
+//
+// Returns:
+//    char[1024]   -   A string containing the unencoded (raw) data.
+//
+// Description:
+//    Decodes the data provided using base64 URL decoding (as defined in RFC 4648).
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[1024] base64Decode(char encodedData[]) {
 	char decodedData[1024];
 	char vals6Bit[4];

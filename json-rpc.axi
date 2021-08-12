@@ -12,6 +12,22 @@ program_name='json-rpc'
 These functions support JSON-RPC v2.0 only and do not support JSON-RPC 1.0/1.1
 */
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonRpcRequestObjParams
+//
+// Parameters:
+//    char method[]   -   A string with the name of the method to be invoked.
+//    JsonObj jObj    -   A JSON Object to be passed as a parameter to the define method.
+//    char id[]       -   A string used to match the response with the JSON-RPC request when it is replied to.
+//
+// Returns:
+//    char[JSON_MAX_VALUE_DATA_LENGTH]   -   A JSON-RPC formatted request.
+//
+// Description:
+//    Builds a JSON-RPC (JSON encoded remote procedure call).
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonRpcRequestObjParams(char method[], JsonObj jObj, char id[]) {
 	char tempMethod[JSON_MAX_VALUE_DATA_LENGTH];
 	char tempId[JSON_MAX_VALUE_DATA_LENGTH];
@@ -50,6 +66,22 @@ define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonRpcRequestObjParams(char me
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonRpcRequestArrayParams
+//
+// Parameters:
+//    char method[]    -    A string with the name of the method to be invoked.
+//    JsonArray jArr   -   A JSON Array to be passed as a parameter to the define method.
+//    char id[]        -   A string used to match the response with the JSON-RPC request when it is replied to.
+//
+// Returns:
+//    char[JSON_MAX_VALUE_DATA_LENGTH]   -   A JSON-RPC formatted request.
+//
+// Description:
+//   Builds a JSON-RPC (JSON encoded remote procedure call).
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonRpcRequestArrayParams(char method[], JsonArray jArr, char id[]) {
 	char tempMethod[JSON_MAX_VALUE_DATA_LENGTH];
 	char tempId[JSON_MAX_VALUE_DATA_LENGTH];

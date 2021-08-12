@@ -39,6 +39,27 @@ program_name='hash'
 #include 'sha1'
 #include 'sha256'
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: hash
+//
+// Parameters:
+//    char scheme[]   -   String representing the hash function to use.
+//    char data[]     -   Data to use in hash function.
+//
+// Returns:
+//    char[2048]   -   The result of the hash function.
+//
+// Description:
+//    Produces a hashed value using the hash function specified. An empty string is returned if specified hash function
+//    is unsupported.
+//    Supported Hash Functions:
+//	- md5
+//	- sha1 | sha-1
+//	- sha256 | sha-256
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[2048] hash(char scheme[], char data[]) {
 
 	switch(lower_string(scheme)) {

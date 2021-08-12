@@ -38,16 +38,58 @@ program_name='codec'
 
 #include 'base64'
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: encode
+//
+// Parameters:
+//    char scheme[]   -   A string representing an encoding scheme.
+//    char data[]     -   The data to encode.
+//
+// Returns:
+//    char[1024]   -   The encoded data.
+//
+// Description:
+//    Encodes data according to the encoding scheme provided. An empty string is returned if specified encoding scheme
+//    is unsupported.
+//    Supported Encoding Schemes:
+//	- base64
+//	- base64Url
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[1024] encode(char scheme[], char data[]) {
 	switch(scheme) {
 		case 'base64': return base64Encode(data);
+		
+		case 'base64Url': return base64UrlEncode(data);
 	}
+	return '';
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: decode
+//
+// Parameters:
+//    char scheme[]   -   A string representing an encoding scheme ('base64').
+//    char data[]     -   The data to decode.
+//
+// Returns:
+//    char[1024]   -   The decoded data.
+//
+// Description:
+//    Decodes data according to the encoding scheme provided. An empty string is returned if specified encoding scheme
+//    is unsupported.
+//    Supported Encoding Schemes:
+//	- base64
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[1024] decode(char scheme[], char data[]) {
 	switch(scheme) {
 		case 'base64': return base64Decode(data);
 	}
+	return '';
 }
 
 

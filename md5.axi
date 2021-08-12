@@ -19,21 +19,23 @@ MD5_BLOCK_SIZE_BITS = 512
 MD5_BLOCK_SIZE_BYTES = 64
 
 
-/*
-	Function: md5
-
-	Parameters:
-		char msg[]
-
-	Returns:
-		char[16] - 128-bit MD5 message digest
-
-	Description:
-		This is a NetLinx implemntation of the MD5 message digest algorithm as described in RFC1321 (see
-		https://tools.ietf.org/html/rfc1321).
-
-		Takes a message parameter and returns a 128-bit (16-byte) MD5 hash of the message.
-*/
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: md5
+//
+// Parameters:
+//    char msg[]   -   Data to hash.
+//
+// Returns:
+//    CHAR[16]   -   128-bit MD5 message digest.
+//
+// Description:
+//    This is a NetLinx implemntation of the MD5 message digest algorithm as described in RFC1321 (see 
+//    https://tools.ietf.org/html/rfc1321).
+//
+//    Takes a message parameter and returns a 128-bit (16-byte) MD5 hash of the message.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function CHAR[16] md5(char msg[]) {
     long K[64];
     long s[64];

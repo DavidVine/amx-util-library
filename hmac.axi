@@ -14,6 +14,27 @@ program_name='hmac'
 NetLinx implementation of HMAC (Keyed-Hashing for Message Authentication) - see RFC 2104.
 */
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: hmac
+//
+// Parameters:
+//    char hashFunction[]   -   String representing the hash function to use.
+//    char message[]        -   Message to use in hash function.
+//    char key[]            -   Key used for message authentication.
+//
+// Returns:
+//    char[1024]   -   Result of the keyed-hashing process.
+//
+// Description:
+//    Produces a keyed-hash conforming to HMAC as defined in RFX 2014. Can be used for message authentication. An empty 
+//    string is returned if specified hash function is unsupported.
+//    Supported Hash Functions:
+//	- md5
+//	- sha1 | sha-1
+//	- sha256 | sha-256
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[1024] hmac(char hashFunction[], char message[], char key[]) {
     char keyAdjusted[1024];
     char outerKey[1024];

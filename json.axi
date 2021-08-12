@@ -61,6 +61,22 @@ struct JsonArray {
 }
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonObjHasOwnProperty
+//
+// Parameters:
+//    JsonObj jObj   -   JSON object.
+//    char name[]    -   Name of property to search for.
+//
+// Returns:
+//    integer   -   True (1) or false (0) result indicating whether the named property was found.
+//
+// Description:
+//    Searches a JSON object to see if it contains a named property and returns true if it exists or false if it does
+//    not. Note: search is only performed on the first level.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function integer jsonObjHasOwnProperty(JsonObj jObj, char name[]) {
 	integer i;
 	
@@ -73,6 +89,26 @@ define_function integer jsonObjHasOwnProperty(JsonObj jObj, char name[]) {
 	return false;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonObjGet
+//
+// Parameters:
+//    JsonObj jObj   -   JSON object.
+//    char name[]    -   Name of property to search for.
+//
+// Returns:
+//    char[JSON_MAX_VALUE_DATA_LENGTH]   -   Value of the property.
+//
+// Description:
+//    Searches a JSON object to see if it contains a named property and returns the value of the property if it exists
+//    or an empty string ('') if it does not.
+//    Note that returned data is always a string but this might contain a JSON object, array, string, number, boolean,
+//    or null value so calls to jsonObjGet should be performed in conjunction with the jsonObjGetType function so the
+//    returned data can be treated appropriately. E.g, it may need to be parsed back into another JsonObject or 
+//    JsonArray, etc...
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonObjGet(JsonObj jObj, char name[]) {
 	integer i;
 	
@@ -85,6 +121,23 @@ define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonObjGet(JsonObj jObj, char n
 	return '';
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonObjGetType
+//
+// Parameters:
+//    JsonObj jObj   -   JSON object.
+//    char name[]    -   Name of property to search for.
+//
+// Returns:
+//    char[7]   -   String indicating the type of the property.
+//
+// Description:
+//    Searches a JSON object to see if it contains a named property and returns a string indicating the type of data 
+//    stored in the property ('array' | 'boolean' | 'null' | 'number' | 'object' | 'string')  if it exists or an empty
+//    string ('') if it does not.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[7] jsonObjGetType(JsonObj jObj, char name[]) {
 	integer i;
 	
@@ -97,7 +150,24 @@ define_function char[7] jsonObjGetType(JsonObj jObj, char name[]) {
 	return '';
 }
 
-define_function integer jsonArrayGet(JsonArray jArray,integer index,JsonToken jToken) {
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonArrayGet
+//
+// Parameters:
+//    JsonArray jArray   -   JSON Array containing the data.
+//    integer index      -   Index of array.
+//    JsonToken jToken   -   JSON Token to copy the data to.
+//
+// Returns:
+//    integer   -   Boolean value (1==true | 0 == false) indicating success or failure.
+//
+// Description:
+//    Gets an element from a JSON array at a specified index and assigns a copy of the element to the JSON token 
+//    parameter (pass-by-reference). If operation is successful returns true, otherwise returns false.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function integer jsonArrayGet(JsonArray jArray, integer index, JsonToken jToken) {
 	integer i;
 	
 	if((index == 0) || (index > length_array(jArray.elements))) {
@@ -110,6 +180,26 @@ define_function integer jsonArrayGet(JsonArray jArray,integer index,JsonToken jT
 	return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonObjGetValues
+//
+// Parameters:
+//    JsonObj jObj                            -   JSON object.
+//    char values[JSON_MAX_OBJECT_VALUES][]   -   2-dimensional array to store the values of the JSON objects'
+//                                                properties.
+//
+// Returns:
+//    nothing.
+//
+// Description:
+//    Copies the values from the JSON objects' properties into the 2-dimensional character array provided. 
+//    Note that while the returned values are strings they are JSON encoded and might contain a JSON object, array, 
+//    string, number, boolean, or null value so calls to jsonObjGetValues should be performed in conjunction with the 
+//    jsonObjGetTypes function so the returned data can be treated appropriately. E.g, it may need to be parsed back 
+//    into another JsonObject or JsonArray, etc...
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function jsonObjGetValues(JsonObj jObj, char values[JSON_MAX_OBJECT_VALUES][]) {
 	integer i;
 	
@@ -119,6 +209,23 @@ define_function jsonObjGetValues(JsonObj jObj, char values[JSON_MAX_OBJECT_VALUE
 	set_length_array(values,i-1);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonObjGetTypes
+//
+// Parameters:
+//    JsonObj jObj                           -   JSON object.
+//    char types[JSON_MAX_OBJECT_VALUES][]   -   2-dimensional array to store the types of the JSON objects'
+//                                               properties.
+//
+// Returns:
+//    nothing.
+//
+// Description:
+//    Copies the types from the JSON object into the 2-dimensional character array provided. Types can be 'array', 
+//    'boolean', 'null', 'number', 'object', and 'string'.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function jsonObjGetTypes(JsonObj jObj, char types[JSON_MAX_OBJECT_VALUES][]) {
 	integer i;
 	
@@ -128,6 +235,22 @@ define_function jsonObjGetTypes(JsonObj jObj, char types[JSON_MAX_OBJECT_VALUES]
 	set_length_array(types,i-1);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonObjGetNames
+//
+// Parameters:
+//    JsonObj jObj                           -   JSON object.
+//    char names[JSON_MAX_OBJECT_VALUES][]   -   2-dimensional array to store the names of the JSON objects'
+//                                               properties.
+//
+// Returns:
+//    nothing.
+//
+// Description:
+//    Copies the names from the JSON objects' properties into the 2-dimensional character array provided.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function jsonObjGetNames(JsonObj jObj, char names[JSON_MAX_OBJECT_VALUES][]) {
 	integer i;
 	
@@ -137,6 +260,25 @@ define_function jsonObjGetNames(JsonObj jObj, char names[JSON_MAX_OBJECT_VALUES]
 	set_length_array(names,i-1);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonArrayGetValues
+//
+// Parameters:
+//    JsonArray jArr                          -   JSON array.
+//    char values[JSON_MAX_OBJECT_VALUES][]   -   2-dimensional array to store the values of the JSON arrays' elements.
+//
+// Returns:
+//    nothing.
+//
+// Description:
+//    Copies the values from the JSON arrays' elements into the 2-dimensional character array provided. 
+//    Note that while the returned values are strings they are JSON encoded and might contain a JSON object, array, 
+//    string, number, boolean, or null value so calls to jsonArrayGetValues should be performed in conjunction with the 
+//    jsonArrayGetTypes function so the returned data can be treated appropriately. E.g, it may need to be parsed back 
+//    into another JsonObject or JsonArray, etc...
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function jsonArrayGetValues(JsonArray jArr, char values[JSON_MAX_OBJECT_VALUES][]) {
 	integer i;
 	
@@ -146,6 +288,22 @@ define_function jsonArrayGetValues(JsonArray jArr, char values[JSON_MAX_OBJECT_V
 	set_length_array(values,i-1);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonArrayGetTypes
+//
+// Parameters:
+//    JsonArray jArr                         -   JSON array.
+//    char types[JSON_MAX_OBJECT_VALUES][]   -   2-dimensional array to store the types of the JSON arrays' elements.
+//
+// Returns:
+//    nothing.
+//
+// Description:
+//    Copies the types of the JSON array elements into the 2-dimensional character array provided. Types can be 'array', 
+//    'boolean', 'null', 'number', 'object', and 'string'.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function jsonArrayGetTypes(JsonArray jArr, char types[JSON_MAX_OBJECT_VALUES][]) {
 	integer i;
 	
@@ -155,6 +313,20 @@ define_function jsonArrayGetTypes(JsonArray jArr, char types[JSON_MAX_OBJECT_VAL
 	set_length_array(types,i-1);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonStringifyValue
+//
+// Parameters:
+//    JsonToken jToken   -   JSON token.
+//
+// Returns:
+//    char[JSON_MAX_VALUE_DATA_LENGTH]   -   JSON encoded string.
+//
+// Description:
+//    Takes a JSON token and returns a JSON-encoded string.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonStringifyValue(JsonToken jToken) {
     switch(jToken.type) {
 		case JSON_TYPE_ARRAY: {
@@ -189,6 +361,20 @@ define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonStringifyValue(JsonToken jT
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonStringifyArray
+//
+// Parameters:
+//    JsonArray jArr   -   JSON array.
+//
+// Returns:
+//    char[JSON_MAX_VALUE_DATA_LENGTH]   -   JSON encoded string.
+//
+// Description:
+//    Takes a JSON array and returns a JSON-encoded string.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonStringifyArray(JsonArray jArr) {
 	char arrStr[JSON_MAX_VALUE_DATA_LENGTH];
 	integer i;
@@ -209,6 +395,20 @@ define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonStringifyArray(JsonArray jA
 	return arrStr;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonStringifyObject
+//
+// Parameters:
+//    JsonObj jObj   -   JSON oject.
+//
+// Returns:
+//    char[JSON_MAX_VALUE_DATA_LENGTH]   -   JSON encoded string.
+//
+// Description:
+//    Takes a JSON object and returns a JSON-encoded string.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonStringifyObject(JsonObj jObj) {
 	char objStr[JSON_MAX_VALUE_DATA_LENGTH];
 	integer i;
@@ -229,6 +429,21 @@ define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonStringifyObject(JsonObj jOb
 	return objStr;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonRemoveWhiteSpace
+//
+// Parameters:
+//    char jsonStr[]   -   JSON-encoded string.
+//
+// Returns:
+//    char[JSON_MAX_VALUE_DATA_LENGTH]   -   JSON-encoded string.
+//
+// Description:
+//    Takes a JSON-encoded string that may contain excess whitespace and returns a JSON-encoded string with all excess
+//    whitespace removed.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonRemoveWhiteSpace(char jsonStr[]) {
 	integer insideString;
 	integer i;
@@ -261,6 +476,22 @@ define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonRemoveWhiteSpace(char jsonS
 	return jsonStrNoWhiteSpace;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonParseArray
+//
+// Parameters:
+//    char jsonArrayStr[]   -   JSON-encoded string.
+//    JsonArray jArr        -   JSON array.
+//
+// Returns:
+//    integer   -   Boolean value (1==true | 0 == false) indicating success or failure.
+//
+// Description:
+//    Parses a JSON encoded string and, if successful, assigns the result to the JSON array parameter 
+//   (pass-by-reference). If operation is successful returns true, otherwise returns false.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function integer jsonParseArray(char jsonArrayStr[], JsonArray jArr) {
 	char tempJson[JSON_MAX_VALUE_DATA_LENGTH];
 	integer invalidJson;
@@ -476,6 +707,22 @@ define_function integer jsonParseArray(char jsonArrayStr[], JsonArray jArr) {
 	
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonParseObject
+//
+// Parameters:
+//    char jsonObjStr[]   -   JSON-encoded string.
+//    JsonObj jObj        -   JSON object.
+//
+// Returns:
+//    integer   -   Boolean value (1==true | 0 == false) indicating success or failure.
+//
+// Description:
+//    Parses a JSON encoded string and, if successful, assigns the result to the JSON object parameter 
+//   (pass-by-reference). If operation is successful returns true, otherwise returns false.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function integer jsonParseObject(char jsonObjStr[], JsonObj jObj) {
 	char tempJson[JSON_MAX_VALUE_DATA_LENGTH];
 	char name[JSON_MAX_VALUE_NAME_LENGTH];
@@ -712,6 +959,26 @@ define_function integer jsonParseObject(char jsonObjStr[], JsonObj jObj) {
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonGet
+//
+// Parameters:
+//    char jsonSerialized[]   -   JSON-encoded string.
+//    char property[]         -   Name of property to search for.
+//    JsonToken jToken        -   JSON token.
+//
+// Returns:
+//    char[50]   -   Token type of property found.
+//
+// Description:
+//    Searches a JSON-encoded string for a specified property and, if found, updates the JSON token parameter
+//    (pass-by-reference). If the search is successful the return string contains the type of the property found 
+//    ('array' | 'boolean' | 'null' | 'number' | 'object' | 'string'). If the property is not found the returned
+//    string is 'property not found'. If the JSON-encoded string is not formatted correctly the returned string is
+//    'invalid'.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[50] jsonGet(char jsonSerialized[], char property[], JsonToken jToken)
 {
 	char json[5000];
@@ -738,6 +1005,21 @@ define_function char[50] jsonGet(char jsonSerialized[], char property[], JsonTok
 	return JSON_PROPERTY_NOT_FOUND;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonEscape
+//
+// Parameters:
+//    char unescaped[]   -   Unescaped JSON-encoded string.
+//
+// Returns:
+//    char[2048]   -   Escaped JSON-encoded string.
+//
+// Description:
+//    Escapes any characters that need escaping in the provided JSON-encoded string. Note that this function does not
+//    test that the JSON-encoded string provided is valid JSON.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[2048] jsonEscape(char unescaped[])
 {
     char escaped[2048];
@@ -770,6 +1052,21 @@ define_function char[2048] jsonEscape(char unescaped[])
     return escaped;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonUnescape
+//
+// Parameters:
+//    char escaped[]   -    Escaped JSON-encoded string.
+//
+// Returns:
+//    char[2048]   -   Unescaped JSON-encoded string.
+//
+// Description:
+//    Unescapes any escaped characters in the provided JSON-encoded string. Note that this function does not test that
+//    the JSON-encoded string provided is valid JSON.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function char[2048] jsonUnescape(char escaped[])
 {
     char unescaped[2048];

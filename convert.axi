@@ -9,7 +9,7 @@ program_name='convert'
 // Function: ltoa
 //
 // Parameters:
-//    long val   -   A long value
+//    long val   -   32-bit value
 //
 // Returns:
 //    char[10]   -   A character array (string) containing the value in numeric ASCII form ('0' - '4294967295')
@@ -32,7 +32,7 @@ define_function char[10] ltoa(long val) {
 // Function: ltba
 //
 // Parameters:
-//    long val   -   A long value
+//    long val   -   32-bit value
 //
 // Returns:
 //    char[4]   -   A 4-byte character array

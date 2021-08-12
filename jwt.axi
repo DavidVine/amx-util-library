@@ -15,6 +15,7 @@ Note that this implementation is far from complete.
 #if_not_defined __JWT__
 #define __JWT__
 
+
 #include 'json.axi'
 #include 'base64.axi'
 #include 'hmac.axi'

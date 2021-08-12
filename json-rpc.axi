@@ -4,7 +4,9 @@ program_name='json-rpc'
 #if_not_defined __JSON_RPC__
 #define __JSON_RPC__
 
+
 #include 'json.axi'
+
 
 /*
 These functions support JSON-RPC v2.0 only and do not support JSON-RPC 1.0/1.1
@@ -85,8 +87,6 @@ define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonRpcRequestArrayParams(char 
 		return "'{"jsonrpc":"2.0","method":',tempMethod,',"params":',jsonStringifyArray(jArr),',"id":"',tempId,'"}'";
 	}
 }
-
-
 
 
 #end_if

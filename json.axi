@@ -738,7 +738,6 @@ define_function char[50] jsonGet(char jsonSerialized[], char property[], JsonTok
 	return JSON_PROPERTY_NOT_FOUND;
 }
 
-
 define_function char[2048] jsonEscape(char unescaped[])
 {
     char escaped[2048];
@@ -802,8 +801,6 @@ define_function char[2048] jsonUnescape(char escaped[])
     }
     return unescaped;
 }
-
-
 
 
 #end_if

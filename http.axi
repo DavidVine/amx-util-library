@@ -933,4 +933,5 @@ define_function httpInitResponse(HttpResponse response) {
 	response.body = '';
 }
 
+
 #end_if

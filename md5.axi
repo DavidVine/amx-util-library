@@ -1,11 +1,13 @@
 program_name='md5'
 
-#include 'binary'
-#include 'convert'
-#include 'string'
 
 #if_not_defined __MD5__
 #define __MD5__
+
+
+#include 'binary'
+#include 'convert'
+#include 'string'
 
 
 define_constant

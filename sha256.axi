@@ -48,14 +48,13 @@ program_name='sha256'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#if_not_defined __SHA_256__
+#define __SHA_256__
+
 
 #include 'binary'
 #include 'convert'
 #include 'string'
-
-
-#if_not_defined __SHA_256__
-#define __SHA_256__
 
 
 define_constant

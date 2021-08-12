@@ -12,8 +12,8 @@ Note that this implementation is far from complete.
 */
 
 
-#IF_NOT_DEFINED __JWT__
-#DEFINE __JWT__
+#if_not_defined __JWT__
+#define __JWT__
 
 #include 'json.axi'
 #include 'base64.axi'
@@ -72,4 +72,4 @@ define_function char[1024] jwt(char header[], char payload[], char secret[], int
 }
 
 
-#END_IF
+#end_if

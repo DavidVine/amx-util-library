@@ -1,4 +1,4 @@
-PROGRAM_NAME='uri'
+program_name='uri'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Include: uri
@@ -34,9 +34,9 @@ PROGRAM_NAME='uri'
 #include 'string'
 
 
-DEFINE_TYPE
+define_type
 
-STRUCT Uri {
+struct Uri {
 	char scheme[30];
 	char user[50];
 	char password[50];
@@ -48,7 +48,7 @@ STRUCT Uri {
 }
 
 
-DEFINE_CONSTANT
+define_constant
 
 char URI_RESERVED_CHARACTERS  [] = {':','/','?','#','[',']','@','!','$','&',$27,'(',')','*','+',',',';','='};
 char URI_UNRESERVED_CHARACTERS[] = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~';
@@ -68,7 +68,7 @@ char URI_UNRESERVED_CHARACTERS[] = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQR
 //    Takes a URI object and returns a URI formatted string.
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION char[1500] uriToString(Uri u) {
+define_function char[1500] uriToString(Uri u) {
 	char result[1500];
 
 	if(length_array(u.scheme)) {
@@ -116,7 +116,7 @@ DEFINE_FUNCTION char[1500] uriToString(Uri u) {
 //    the values of the URI object to match the parsed results.
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION uriFromString(Uri u, char str[]) {
+define_function uriFromString(Uri u, char str[]) {
 	stack_var char temp[200]
 	stack_var integer idx;
 	stack_var char scheme[20], authority[300], path[200], query[200], fragment[200];
@@ -230,7 +230,7 @@ DEFINE_FUNCTION uriFromString(Uri u, char str[]) {
 //    Takes a character array (string) and returns a string containing a percent-encoded version of that string.
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION char[2048] uriPercentEncodeString(char u[]) {
+define_function char[2048] uriPercentEncodeString(char u[]) {
 	stack_var char i;
 	stack_var char c;
 	stack_var char encoded[2048];
@@ -262,7 +262,7 @@ DEFINE_FUNCTION char[2048] uriPercentEncodeString(char u[]) {
 //    Takes a character and returns a string containing a percent-encoded version of that character.
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION char[3] uriPercentEncodeChar(char c) {
+define_function char[3] uriPercentEncodeChar(char c) {
 	return "'%',format('%02X',"c")";
 }
 
@@ -281,7 +281,7 @@ DEFINE_FUNCTION char[3] uriPercentEncodeChar(char c) {
 //    in a URI.
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION integer uriIsReservedChar(char c) {
+define_function integer uriIsReservedChar(char c) {
 	return (find_string(URI_RESERVED_CHARACTERS,"c",1))
 }
 
@@ -300,6 +300,8 @@ DEFINE_FUNCTION integer uriIsReservedChar(char c) {
 //    character in a URI (i.e., is it unreserved?)
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION integer uriIsUnreservedChar(char c) {
+define_function integer uriIsUnreservedChar(char c) {
 	return (find_string(URI_UNRESERVED_CHARACTERS,"c",1))
 }
+
+#end_if

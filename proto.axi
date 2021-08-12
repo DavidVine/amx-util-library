@@ -1,4 +1,4 @@
-PROGRAM_NAME='proto'
+program_name='proto'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Include: proto
@@ -23,8 +23,8 @@ PROGRAM_NAME='proto'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#IF_NOT_DEFINED __PROTO__
-#DEFINE __PROTO__
+#if_not_defined __PROTO__
+#define __PROTO__
 
 #include 'http'         // HTTP
 #include 'json'         // JSON
@@ -32,4 +32,4 @@ PROGRAM_NAME='proto'
 #include 'websockets'   // WebSockets
 #include 'xml'          // XML
 
-#END_IF
+#end_if

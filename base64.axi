@@ -31,8 +31,8 @@ program_name='base64'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#IF_NOT_DEFINED __BASE64__
-#DEFINE __BASE64__
+#if_not_defined __BASE64__
+#define __BASE64__
 
 define_constant
 
@@ -229,4 +229,4 @@ define_function char[1024] base64Decode(char encodedData[]) {
 }
 
 
-#END_IF
+#end_if

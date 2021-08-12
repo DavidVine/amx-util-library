@@ -1,4 +1,4 @@
-PROGRAM_NAME='crypto'
+program_name='crypto'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Include: crypto
@@ -26,11 +26,11 @@ PROGRAM_NAME='crypto'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#IF_NOT_DEFINED __CRYPTO__
-#DEFINE __CRYPTO__
+#if_not_defined __CRYPTO__
+#define __CRYPTO__
 
 #include 'codec'  // encoding / decoding
 #include 'cipher' // encypting / decypting
 #include 'hash'   // hashing (message digest)
 
-#END_IF
+#end_if

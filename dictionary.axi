@@ -1,4 +1,4 @@
-PROGRAM_NAME='dictionary'
+program_name='dictionary'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Include: dictionary
@@ -27,14 +27,14 @@ PROGRAM_NAME='dictionary'
 #define __DICTIONARY__
 
 
-DEFINE_CONSTANT
+define_constant
 
 integer DICTIONARY_MAX_KEY_LENGTH = 100;
 integer DICTIONARY_MAX_VAL_LENGTH = 500;
 integer DICTIONARY_MAX_KEY_VAL_PAIRS = 256;
 
 
-DEFINE_TYPE
+define_type
 
 struct DictionaryEntry {
 	char key[DICTIONARY_MAX_KEY_LENGTH];
@@ -64,7 +64,7 @@ struct Dictionary {
 //    will also be returned if the dictionary is already full or the key/val pair already exists within the dictionary.
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION integer dictionaryAdd (Dictionary dict, char key[], char val[]) {
+define_function integer dictionaryAdd (Dictionary dict, char key[], char val[]) {
 	stack_var integer idx;
 
 	if((key == '') || // empty key
@@ -104,7 +104,7 @@ DEFINE_FUNCTION integer dictionaryAdd (Dictionary dict, char key[], char val[]) 
 //    and returns a true (1) result otherwise returns a false (0) result.
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION integer dictionaryRemove (Dictionary dict, char key[]) {
+define_function integer dictionaryRemove (Dictionary dict, char key[]) {
 	stack_var integer idx;
 
 	idx = dictionaryGetIndex(dict, key);
@@ -144,7 +144,7 @@ DEFINE_FUNCTION integer dictionaryRemove (Dictionary dict, char key[]) {
 //    string ('').
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION char[DICTIONARY_MAX_VAL_LENGTH] dictionaryGetValue(Dictionary dict, char key[]) {
+define_function char[DICTIONARY_MAX_VAL_LENGTH] dictionaryGetValue(Dictionary dict, char key[]) {
 	stack_var integer i;
 	i = 1;
 	while(i <= length_array(dict.keyVals)) {
@@ -175,7 +175,7 @@ DEFINE_FUNCTION char[DICTIONARY_MAX_VAL_LENGTH] dictionaryGetValue(Dictionary di
 //          case.
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION char[DICTIONARY_MAX_VAL_LENGTH] dictionaryGetValueIgnoreKeyCase(Dictionary dict, char key[]) {
+define_function char[DICTIONARY_MAX_VAL_LENGTH] dictionaryGetValueIgnoreKeyCase(Dictionary dict, char key[]) {
 	stack_var integer i;
 	i = 1;
 	while(i <= length_array(dict.keyVals)) {
@@ -201,7 +201,7 @@ DEFINE_FUNCTION char[DICTIONARY_MAX_VAL_LENGTH] dictionaryGetValueIgnoreKeyCase(
 //    Searches the dictionary for a matching key and if found returns the index it is stored at otherwise returns 0.
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION integer dictionaryGetIndex(Dictionary dict, char key[]) {
+define_function integer dictionaryGetIndex(Dictionary dict, char key[]) {
 	stack_var integer i;
 	i = 1;
 	while(i <= length_array(dict.keyVals)) {
@@ -226,7 +226,7 @@ DEFINE_FUNCTION integer dictionaryGetIndex(Dictionary dict, char key[]) {
 //    Clears the dictionary of all key/val pairs
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION dictionaryClear(Dictionary dict) {
+define_function dictionaryClear(Dictionary dict) {
 	stack_var integer i;
 
 	for(i = 1; i <= max_length_array(dict.keyVals); i++) {
@@ -251,7 +251,7 @@ DEFINE_FUNCTION dictionaryClear(Dictionary dict) {
 //    Copies one dictionary to another
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DEFINE_FUNCTION dictionaryCopy(Dictionary dictCopyFrom,Dictionary dictCopyTo) {
+define_function dictionaryCopy(Dictionary dictCopyFrom,Dictionary dictCopyTo) {
 	stack_var integer i;
 
 	dictionaryClear(dictCopyTo);

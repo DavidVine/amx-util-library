@@ -1,8 +1,8 @@
 program_name='json-rpc'
 
 
-#IF_NOT_DEFINED __JSON_RPC__
-#DEFINE __JSON_RPC__
+#if_not_defined __JSON_RPC__
+#define __JSON_RPC__
 
 #include 'json.axi'
 
@@ -89,4 +89,4 @@ define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonRpcRequestArrayParams(char 
 
 
 
-#END_IF
+#end_if

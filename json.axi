@@ -1,8 +1,8 @@
 program_name='json'
 
 
-#IF_NOT_DEFINED __JSON__
-#DEFINE __JSON__
+#if_not_defined __JSON__
+#define __JSON__
 
 
 define_constant
@@ -806,4 +806,4 @@ define_function char[2048] jsonUnescape(char escaped[])
 
 
 
-#END_IF
+#end_if

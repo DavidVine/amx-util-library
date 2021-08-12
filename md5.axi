@@ -4,8 +4,8 @@ program_name='md5'
 #include 'convert'
 #include 'string'
 
-#IF_NOT_DEFINED __MD5__
-#DEFINE __MD5__
+#if_not_defined __MD5__
+#define __MD5__
 
 
 define_constant
@@ -158,4 +158,4 @@ define_function CHAR[16] md5(char msg[]) {
 
 
 
-#END_IF
+#end_if

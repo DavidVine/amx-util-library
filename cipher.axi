@@ -1,4 +1,4 @@
-PROGRAM_NAME='cipher'
+program_name='cipher'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Include: cipher (*NOT IMPLEMENTED AT THIS TIME*)
@@ -24,14 +24,14 @@ PROGRAM_NAME='cipher'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#IF_NOT_DEFINED __CIPHER__
-#DEFINE __CIPHER__
+#if_not_defined __CIPHER__
+#define __CIPHER__
 
-/*#INCLUDE 'rsa'
-#INCLUDE 'aes'
-#INCLUDE '3des'
-#INCLUDE 'blowfish'
-#INCLUDE 'twofish'*/
+/*#include 'rsa'
+#include 'aes'
+#include '3des'
+#include 'blowfish'
+#include 'twofish'*/
 
 /*define_function char[5000] encrypt(char cipher[], char data[]) {
 
@@ -77,4 +77,4 @@ PROGRAM_NAME='cipher'
 	}
 }*/
 
-#END_IF
+#end_if

@@ -1,4 +1,4 @@
-PROGRAM_NAME='sha256'
+program_name='sha256'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Include: sha256
@@ -54,8 +54,8 @@ PROGRAM_NAME='sha256'
 #include 'string'
 
 
-#IF_NOT_DEFINED __SHA_256__
-#DEFINE __SHA_256__
+#if_not_defined __SHA_256__
+#define __SHA_256__
 
 
 define_constant
@@ -239,4 +239,4 @@ define_function CHAR[32] sha256(char msg[]) {
 }
 
 
-#END_IF
+#end_if

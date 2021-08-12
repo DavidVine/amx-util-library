@@ -1,11 +1,11 @@
-PROGRAM_NAME='xml'
+program_name='xml'
 
-#IF_NOT_DEFINED __XML_UTIL__
-#DEFINE __XML_UTIL__
+#if_not_defined __XML_UTIL__
+#define __XML_UTIL__
 
 #include 'string'
 
-DEFINE_CONSTANT
+define_constant
 
 integer XML_MAX_CHARS = 20000;	// Adjust if necessary. Note that 100000 chars crashes NSX if you try to add a char array this big to the watch window
 
@@ -732,6 +732,4 @@ define_function char[XML_MAX_CHARS] xmlParseContent (char xml[], char elementNam
 	return content;
 }
 
-#END_IF
-
-
+#end_if

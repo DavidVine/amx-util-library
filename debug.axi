@@ -1,4 +1,4 @@
-PROGRAM_NAME='debug'
+program_name='debug'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Include: debug
@@ -23,10 +23,10 @@ PROGRAM_NAME='debug'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#IF_NOT_DEFINED __DEBUG__
-#DEFINE __DEBUG__
+#if_not_defined __DEBUG__
+#define __DEBUG__
 
-DEFINE_VARIABLE
+define_variable
 
 volatile debug = false;
 
@@ -165,4 +165,4 @@ define_function char[17] devToString(dev device) {
 	return "itoa(device.number),':',itoa(device.port),':',itoa(device.system)"
 }
 
-#END_IF
+#end_if

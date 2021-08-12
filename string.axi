@@ -1,4 +1,4 @@
-PROGRAM_NAME='string'
+program_name='string'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Include: string
@@ -23,11 +23,11 @@ PROGRAM_NAME='string'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#IF_NOT_DEFINED __STRING__
-#DEFINE __STRING__
+#if_not_defined __STRING__
+#define __STRING__
 
 
-DEFINE_CONSTANT
+define_constant
 
 char CR = $0D;
 char LF = $0A;
@@ -222,4 +222,4 @@ define_function char[5000] hex(char data[]) {
 }
 
 
-#END_IF
+#end_if

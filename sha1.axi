@@ -1,4 +1,4 @@
-PROGRAM_NAME='sha1'
+program_name='sha1'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Include: sha1
@@ -54,8 +54,8 @@ PROGRAM_NAME='sha1'
 #include 'string'
 
 
-#IF_NOT_DEFINED __SHA_1__
-#DEFINE __SHA_1__
+#if_not_defined __SHA_1__
+#define __SHA_1__
 
 
 define_constant
@@ -188,4 +188,4 @@ define_function CHAR[20] sha1(char msg[]) {
 }
 
 
-#END_IF
+#end_if

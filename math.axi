@@ -1,1 +1,1 @@
-PROGRAM_NAME='math'
+program_name='math'

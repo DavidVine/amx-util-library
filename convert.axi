@@ -1,7 +1,7 @@
-PROGRAM_NAME='convert'
+program_name='convert'
 
-#IF_NOT_DEFINED __CONVERT__
-#DEFINE __CONVERT__
+#if_not_defined __CONVERT__
+#define __CONVERT__
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -115,4 +115,4 @@ define_function long lcrs(long val, integer s) {
 }
 
 
-#END_IF
+#end_if

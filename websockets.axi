@@ -203,8 +203,8 @@ program_name='websockets'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#IF_NOT_DEFINED __WEB_SOCKET__
-#DEFINE __WEB_SOCKET__
+#if_not_defined __WEB_SOCKET__
+#define __WEB_SOCKET__
 
 //#include 'uri'
 #include 'convert'
@@ -316,29 +316,29 @@ volatile dev wsSockets[MAX_WEB_SOCKETS];
 // Callback functions to be implemented in the main program file
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#IF_NOT_DEFINED WEBSOCKET_EVENT_CLOSE
+#if_not_defined WEBSOCKET_EVENT_CLOSE
 define_function webSocketOnClose(dev socket) {
 	send_string 0, "'webSocketOnClose(',devToString(socket),')'"
 }
-#END_IF
+#end_if
 
-#IF_NOT_DEFINED WEBSOCKET_EVENT_ERROR
+#if_not_defined WEBSOCKET_EVENT_ERROR
 define_function webSocketOnError(dev socket, long errorCode, char errorReason[]) {
 	send_string 0, "'webSocketOnError(',devToString(socket),',',itoa(errorCode),',',errorReason,')'"
 }
-#END_IF
+#end_if
 
-#IF_NOT_DEFINED WEBSOCKET_EVENT_MESSAGE
+#if_not_defined WEBSOCKET_EVENT_MESSAGE
 define_function webSocketOnMessage(dev socket, char data[]) {
 	send_string 0, "'webSocketOnMessage(',devToString(socket),',',data,')'"
 }
-#END_IF
+#end_if
 
-#IF_NOT_DEFINED WEBSOCKET_EVENT_OPEN
+#if_not_defined WEBSOCKET_EVENT_OPEN
 define_function webSocketOnOpen(dev socket) {
 	send_string 0, "'webSocketOnOpen(',devToString(socket),')'"
 }
-#END_IF
+#end_if
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1063,7 +1063,4 @@ data_event[wsSockets] {
 	}
 }
 
-
-
-#END_IF
-
+#end_if

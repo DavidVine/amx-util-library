@@ -1,7 +1,7 @@
 program_name='hmac'
 
-#IF_NOT_DEFINED __HMAC__
-#DEFINE __HMAC__
+#if_not_defined __HMAC__
+#define __HMAC__
 
 #include 'md5.axi'
 #include 'sha1.axi'
@@ -77,4 +77,4 @@ define_function char[1024] hmac(char hashFunction[], char message[], char key[])
 }
 
 
-#END_IF
+#end_if

@@ -47,14 +47,18 @@ define_function char[2048] hash(char scheme[], char data[]) {
 			return md5(data);
 		}
 
-		case 'sha1': {
+		case 'sha1':
+		case 'sha-1': {
 			return sha1(data);
 		}
 
-		case 'sha256': {
+		case 'sha256':
+		case 'sha-256': {
 			return sha256(data);
 		}
 	}
+	
+	return '';
 }
 
 

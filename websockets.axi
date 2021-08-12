@@ -212,8 +212,8 @@ program_name='websockets'
 #include 'crypto'
 #include 'http'
 #include 'string'
+#include 'debug'
 
-#include 'debug';
 
 define_type
 

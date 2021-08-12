@@ -35,6 +35,7 @@ program_name='codec'
 #if_not_defined __CODEC__
 #define __CODEC__
 
+
 #include 'base64'
 
 define_function char[1024] encode(char scheme[], char data[]) {
@@ -48,5 +49,6 @@ define_function char[1024] decode(char scheme[], char data[]) {
 		case 'base64': return base64Decode(data);
 	}
 }
+
 
 #end_if

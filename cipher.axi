@@ -27,11 +27,13 @@ program_name='cipher'
 #if_not_defined __CIPHER__
 #define __CIPHER__
 
+
 /*#include 'rsa'
 #include 'aes'
 #include '3des'
 #include 'blowfish'
 #include 'twofish'*/
+
 
 /*define_function char[5000] encrypt(char cipher[], char data[]) {
 
@@ -55,7 +57,6 @@ program_name='cipher'
 }*/
 
 
-
 /*define_function char[5000] decrypt(char cipher[], char data[]) {
 
 	switch(cipher) {
@@ -76,5 +77,6 @@ program_name='cipher'
 		}
 	}
 }*/
+
 
 #end_if

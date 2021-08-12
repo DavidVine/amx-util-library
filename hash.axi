@@ -34,6 +34,7 @@ program_name='hash'
 #if_not_defined __HASH__
 #define __HASH__
 
+
 #include 'md5'
 #include 'sha1'
 #include 'sha256'
@@ -55,5 +56,6 @@ define_function char[2048] hash(char scheme[], char data[]) {
 		}
 	}
 }
+
 
 #end_if

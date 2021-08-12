@@ -27,6 +27,7 @@ program_name='binary'
 #if_not_defined __BINARY__
 #define __BINARY__
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
 // Function: charToBinary
@@ -255,5 +256,6 @@ define_function char[1048576] rightRotateString(char msg[]) {
 
 	return result;
 }
+
 
 #end_if

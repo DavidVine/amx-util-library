@@ -1,11 +1,14 @@
 program_name='hmac'
 
+
 #if_not_defined __HMAC__
 #define __HMAC__
+
 
 #include 'md5.axi'
 #include 'sha1.axi'
 #include 'sha256.axi'
+
 
 /*
 NetLinx implementation of HMAC (Keyed-Hashing for Message Authentication) - see RFC 2104.

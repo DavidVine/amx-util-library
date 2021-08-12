@@ -26,6 +26,7 @@ program_name='debug'
 #if_not_defined __DEBUG__
 #define __DEBUG__
 
+
 define_variable
 
 volatile debug = false;
@@ -164,5 +165,6 @@ define_function printHexBlock(char data[]) {
 define_function char[17] devToString(dev device) {
 	return "itoa(device.number),':',itoa(device.port),':',itoa(device.system)"
 }
+
 
 #end_if

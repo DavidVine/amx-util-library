@@ -206,6 +206,7 @@ program_name='websockets'
 #if_not_defined __WEB_SOCKET__
 #define __WEB_SOCKET__
 
+
 //#include 'uri'
 #include 'convert'
 #include 'crypto'
@@ -1062,5 +1063,6 @@ data_event[wsSockets] {
 		}
 	}
 }
+
 
 #end_if

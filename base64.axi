@@ -34,6 +34,7 @@ program_name='base64'
 #if_not_defined __BASE64__
 #define __BASE64__
 
+
 define_constant
 
 char BASE64_ALPHABET[64]    = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';

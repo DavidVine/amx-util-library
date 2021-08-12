@@ -48,14 +48,13 @@ program_name='sha1'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#if_not_defined __SHA_1__
+#define __SHA_1__
+
 
 #include 'binary'
 #include 'convert'
 #include 'string'
-
-
-#if_not_defined __SHA_1__
-#define __SHA_1__
 
 
 define_constant

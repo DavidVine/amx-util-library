@@ -1,8 +1,8 @@
 program_name='xml'
 
 
-#if_not_defined __XML_UTIL__
-#define __XML_UTIL__
+#if_not_defined __XML__
+#define __XML__
 
 
 #include 'string'

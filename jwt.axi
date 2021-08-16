@@ -1,16 +1,36 @@
 program_name='jwt'
 
-
-/*
-This NetLinx include contains an implementation of JSON Web Tokens (JWT).
-	- see RFC-7515 JSON Web Signature (JWS)                          [https://tools.ietf.org/html/rfc7515]
-	- see RFC-7519 JSON Web Tokens (JWT)                             [https://tools.ietf.org/html/rfc7519]
-	- see RFC-7797 JSON Web Signature (JWS) Unencoded Payload Option [https://tools.ietf.org/html/rfc7797]
-	- see RFC-7516 JSON Web Encryption (JWE)                         [https://tools.ietf.org/html/rfc7516]
-
-Note that this implementation is far from complete.
-*/
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Include: jwt
+// 
+// Description:
+//
+//    - This include file provides a NetLinx implementation of JSON Web Tokens (JWT).
+//          - see RFC-7515 JSON Web Signature (JWS)                          [https://tools.ietf.org/html/rfc7515]
+//          - see RFC-7519 JSON Web Tokens (JWT)                             [https://tools.ietf.org/html/rfc7519]
+//          - see RFC-7797 JSON Web Signature (JWS) Unencoded Payload Option [https://tools.ietf.org/html/rfc7797]
+//          - see RFC-7516 JSON Web Encryption (JWE)                         [https://tools.ietf.org/html/rfc7516]
+//
+//    - Note that this implementation is far from complete.
+//
+// Implementation:
+//
+//    - Any NetLinx program utilising the jwt include file must use either the INCLUDE or #INCLUDE keywords to 
+//      include the jwt include file within the program. While the INCLUDE and #INCLUDE keywords are both 
+//      functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE
+//      keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
+//      for backwards compatibility).
+//
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
+//
+//      E.g:
+//
+//          define_program 'JWT Demo'
+//
+//          #include 'jwt'
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if_not_defined __JWT__
 #define __JWT__

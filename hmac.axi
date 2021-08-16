@@ -1,5 +1,31 @@
 program_name='hmac'
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Include: hmac
+// 
+// Description:
+//
+//    - This include file provides a NetLinx implementation of HMAC (Keyed-Hashing for Message Authentication) as 
+//      defined in RFC 2104 (see https://tools.ietf.org/html/rfc2104).
+//
+// Implementation:
+//
+//    - Any NetLinx program utilising the hmac include file must use either the INCLUDE or #INCLUDE keywords to 
+//      include the hmac include file within the program. While the INCLUDE and #INCLUDE keywords are both 
+//      functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE
+//      keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
+//      for backwards compatibility).
+//
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
+//
+//      E.g:
+//
+//          define_program 'HMAC Demo'
+//
+//          #include 'hmac'
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if_not_defined __HMAC__
 #define __HMAC__
@@ -9,10 +35,6 @@ program_name='hmac'
 #include 'sha1.axi'
 #include 'sha256.axi'
 
-
-/*
-NetLinx implementation of HMAC (Keyed-Hashing for Message Authentication) - see RFC 2104.
-*/
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 

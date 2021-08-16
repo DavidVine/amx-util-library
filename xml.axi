@@ -1,5 +1,34 @@
 program_name='xml'
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Include: xml
+// 
+// Description:
+//
+//    - This include file provides functions for working with XML (eXtensible Markup Language).
+//
+// Implementation:
+//
+//    - Any NetLinx program utilising the xml include file must use either the INCLUDE or #INCLUDE keywords to 
+//      include the xml include file within the program. While the INCLUDE and #INCLUDE keywords are both 
+//      functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE
+//      keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
+//      for backwards compatibility).
+//
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
+//
+//      E.g:
+//
+//          define_program 'XML Demo'
+//
+//          #include 'xml'
+//
+// Usage:
+//
+//    - See function header comments below for usage details.
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if_not_defined __XML__
 #define __XML__

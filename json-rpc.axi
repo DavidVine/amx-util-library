@@ -1,5 +1,30 @@
 program_name='json-rpc'
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Include: json-rpc
+// 
+// Description:
+//
+//    - This include file provides a NetLinx implementation of JSON RPC's (JSON Remote Procedure Calls).
+//
+// Implementation:
+//
+//    - Any NetLinx program utilising the jspn-rpc include file must use either the INCLUDE or #INCLUDE keywords to 
+//      include the json-rpc include file within the program. While the INCLUDE and #INCLUDE keywords are both 
+//      functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE
+//      keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
+//      for backwards compatibility).
+//
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
+//
+//      E.g:
+//
+//          define_program 'JSON RPC Demo'
+//
+//          #include 'json-rpc'
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if_not_defined __JSON_RPC__
 #define __JSON_RPC__

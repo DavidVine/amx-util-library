@@ -1,5 +1,30 @@
 program_name='http'
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Include: http
+// 
+// Description:
+//
+//    - This include file provides structures and functions for working with HTTP/1.1 (Hypertext Transfer Protocol).
+//
+// Implementation:
+//
+//    - Any NetLinx program utilising the http include file must use either the INCLUDE or #INCLUDE keywords to 
+//      include the http include file within the program. While the INCLUDE and #INCLUDE keywords are both 
+//      functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE
+//      keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
+//      for backwards compatibility).
+//
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
+//
+//      E.g:
+//
+//          define_program 'HTTP Demo'
+//
+//          #include 'http'
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if_not_defined __HTTP__
 #define __HTTP__

@@ -1,5 +1,41 @@
 program_name='md5'
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Include: md5
+// 
+// Description:
+//
+//    - This include file provides a NetLinx implementation of the MD5 message-digest algorithm. A cryptographic hash
+//      function as defined in RFC 1321 (see https://tools.ietf.org/html/rfc1321).
+//
+// Implementation:
+//
+//    - Any NetLinx program utilising the md5 include file must use either the INCLUDE or #INCLUDE keywords to 
+//      include the md5 include file within the program. While the INCLUDE and #INCLUDE keywords are both 
+//      functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE
+//      keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
+//      for backwards compatibility).
+//
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
+//
+//      E.g:
+//
+//          define_program 'MD5 Demo'
+//
+//          #include 'md5'
+//
+// Usage:
+//
+//    - The md5 function provided within this include file takes a message of unbound length and returns a 128-bit
+//      (16-byte) message digest in a CHAR array.
+//
+//      E.g:
+//
+//          hashedPassword = md5('p@55w0rd');
+//          // returns "$39,$F1,$3D,$60,$B3,$F6,$FB,$E0,$BA,$16,$36,$B0,$A9,$28,$3C,$50"
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if_not_defined __MD5__
 #define __MD5__

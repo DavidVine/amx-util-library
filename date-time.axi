@@ -1,5 +1,31 @@
 program_name='date-time'
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Include: date-time
+// 
+// Description:
+//
+//    - This include file provides functions for working with dates and time.
+//
+// Implementation:
+//
+//    - Any NetLinx program utilising the date-time include file must use either the INCLUDE or #INCLUDE keywords to 
+//      include the date-time include file within the program. While the INCLUDE and #INCLUDE keywords are both 
+//      functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE
+//      keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
+//      for backwards compatibility).
+//
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
+//
+//      E.g:
+//
+//          define_program 'DateTime Demo'
+//
+//          #include 'date-time'
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 #if_not_defined __DATE_TIME__
 #define __DATE_TIME__

@@ -10,17 +10,20 @@ program_name='cipher'
 //
 // Implementation:
 //
-//   - Any NetLinx program utilising the cipher include file must use either the INCLUDE or #INCLUDE keywords to 
-//     include the cipher include file within the program. While the INCLUDE and #INCLUDE keywords are both 
-//     functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE 
-//     keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
-//     for backwards compatibility).
+//    - Any NetLinx program utilising the cipher include file must use either the INCLUDE or #INCLUDE keywords to 
+//      include the cipher include file within the program. While the INCLUDE and #INCLUDE keywords are both 
+//      functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE 
+//      keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
+//      for backwards compatibility).
 //
-//     E.g:
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
 //
-//        DEFINE_PROGRAM 'Encryption Demo'
+//      E.g:
 //
-//        #INCLUDE 'cipher'
+//          define_program 'Encryption Demo'
+//
+//          #include 'cipher'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

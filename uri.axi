@@ -5,25 +5,25 @@ program_name='uri'
 // 
 // Description:
 //
-//   - This include file provides functions for working with URI's as defined RFC 3986 (see 
-//     https://tools.ietf.org/html/rfc3986).
+//    - This include file provides functions for working with URI's as defined RFC 3986 (see 
+//      https://tools.ietf.org/html/rfc3986).
 //
 // Implementation:
 //
-//   - Any NetLinx program utilising the uri include file must use either the INCLUDE or #INCLUDE keywords to include 
-//     the uri include file within the program. While the INCLUDE and #INCLUDE keywords are both functionally 
-//     equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE keyword is 
-//     from the earlier Axcess programming language and is included within the NetLinx programming language for 
-//     backwards compatibility).
+//    - Any NetLinx program utilising the uri include file must use either the INCLUDE or #INCLUDE keywords to include 
+//      the uri include file within the program. While the INCLUDE and #INCLUDE keywords are both functionally 
+//      equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE keyword is 
+//      from the earlier Axcess programming language and is included within the NetLinx programming language for 
+//      backwards compatibility).
 //
-//     E.g:
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
 //
-//        DEFINE_PROGRAM 'URI Demo'
+//      E.g:
 //
-//        #INCLUDE 'uri'
+//          define_program 'URI Demo'
 //
-//
-//
+//          #include 'uri'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

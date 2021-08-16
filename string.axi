@@ -5,21 +5,24 @@ program_name='string'
 // 
 // Description:
 //
-//   - This include file provides extra string operation functions not natively provided in NetLinx.
+//    - This include file provides extra string operation functions not natively provided in NetLinx.
 //
 // Implementation:
 //
-//   - Any NetLinx program utilising the string include file must use either the INCLUDE or #INCLUDE keywords to 
-//     include the string include file within the program. While the INCLUDE and #INCLUDE keywords are both 
-//     functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE 
-//     keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
-//     for backwards compatibility).
+//    - Any NetLinx program utilising the string include file must use either the INCLUDE or #INCLUDE keywords to 
+//      include the string include file within the program. While the INCLUDE and #INCLUDE keywords are both 
+//      functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE 
+//      keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
+//      for backwards compatibility).
 //
-//     E.g:
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
 //
-//        DEFINE_PROGRAM 'String Demo'
+//      E.g:
 //
-//        #INCLUDE 'string'
+//          define_program 'String Demo'
+//
+//          #include 'string'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

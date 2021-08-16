@@ -5,46 +5,52 @@ program_name='sha256'
 // 
 // Description:
 //
-//   - This include file provides a NetLinx implementation of the SHA-2 (Secure Hash Algorithm 2) cryptographic hash
-//     function, specifically SHA-256.
+//    - This include file provides a NetLinx implementation of the SHA-2 (Secure Hash Algorithm 2) cryptographic hash
+//      function, specifically SHA-256.
 //
 // Implementation:
 //
-//   - Any NetLinx program utilising the sha256 include file must use either the INCLUDE or #INCLUDE keywords to 
-//     include the sha256 include file within the program. While the INCLUDE and #INCLUDE keywords are both 
-//     functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the 
-//     INCLUDE keyword is from the earlier Axcess programming language and is included within the NetLinx programming 
-//     language for backwards compatibility).
+//    - Any NetLinx program utilising the sha256 include file must use either the INCLUDE or #INCLUDE keywords to 
+//      include the sha256 include file within the program. While the INCLUDE and #INCLUDE keywords are both 
+//      functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the 
+//      INCLUDE keyword is from the earlier Axcess programming language and is included within the NetLinx programming 
+//      language for backwards compatibility).
 //
-//     E.g:
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
 //
-//        DEFINE_PROGRAM 'SHA-256 Demo'
+//      E.g:
 //
-//        #INCLUDE 'sha256'
+//          define_program 'SHA-256 Demo'
 //
-//   - The sha256 function provided within this include file takes a message of unbound length and returns a 256=-bit
-//     (32-byte) message digest in a CHAR array.
+//          #include 'sha256'
 //
-//     E.g:
+// Usage:
 //
-//         hashedPassword = sha256'p@55w0rd');
+//    - The sha256 function provided within this include file takes a message of unbound length and returns a 256=-bit
+//      (32-byte) message digest in a CHAR array.
 //
-//   - Some example SHA-256 results to test against are as follows (note the results are hex values, not ASCII strings):
+//      E.g:
 //
-//     msg: ''
-//     result: "$e3,$b0,$c4,$42,$98,$fc,$1c,$14,$9a,$fb,$f4,$c8,$99,$6f,$b9,$24,$27,$ae,$41,$e4,$64,$9b,$93,$4c,$a4,$95,$99,$1b,$78,$52,$b8,$55"
+//          hashedPassword = sha256'p@55w0rd');
+//          // returns "$59,$F4,$6B,$B9,$0C,$FF,$B0,$ED,$7C,$7E,$5D,$B5,$8B,$B3,$00,$F3,$BC,$D7,$14,$F5,$1A,$E7,$23,$ED,$91,$B0,$6A,$3E,$13,$D4,$D5,$B6"
 //
-//     msg: 'The quick brown fox jumps over the lazy dog'
-//     result: "$D7,$A8,$FB,$B3,$07,$D7,$80,$94,$69,$CA,$9A,$BC,$B0,$08,$2E,$4F,$8D,$56,$51,$E4,$6D,$3C,$DB,$76,$2D,$02,$D0,$BF,$37,$C9,$E5,$92"
+//    - Some example SHA-256 results to test against are as follows (note the results are hex values, not ASCII strings):
 //
-//     msg: 'abc'
-//     result: "$BA,$78,$16,$BF,$8F,$01,$CF,$EA,$41,$41,$40,$DE,$5D,$AE,$22,$23,$B0,$03,$61,$A3,$96,$17,$7A,$9C,$B4,$10,$FF,$61,$F2,$00,$15,$AD"
+//          msg: ''
+//          result: "$e3,$b0,$c4,$42,$98,$fc,$1c,$14,$9a,$fb,$f4,$c8,$99,$6f,$b9,$24,$27,$ae,$41,$e4,$64,$9b,$93,$4c,$a4,$95,$99,$1b,$78,$52,$b8,$55"
 //
-//     msg: 'abcdefghijklmnopqrstuvwxyz'
-//     result: "$71,$C4,$80,$DF,$93,$D6,$AE,$2F,$1E,$FA,$D1,$44,$7C,$66,$C9,$52,$5E,$31,$62,$18,$CF,$51,$FC,$8D,$9E,$D8,$32,$F2,$DA,$F1,$8B,$73"
+//          msg: 'The quick brown fox jumps over the lazy dog'
+//          result: "$D7,$A8,$FB,$B3,$07,$D7,$80,$94,$69,$CA,$9A,$BC,$B0,$08,$2E,$4F,$8D,$56,$51,$E4,$6D,$3C,$DB,$76,$2D,$02,$D0,$BF,$37,$C9,$E5,$92"
 //
-//     msg: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-//     result: "$D6,$EC,$68,$98,$DE,$87,$DD,$AC,$6E,$5B,$36,$11,$70,$8A,$7A,$A1,$C2,$D2,$98,$29,$33,$49,$CC,$1A,$6C,$29,$9A,$1D,$B7,$14,$9D,$38"
+//          msg: 'abc'
+//          result: "$BA,$78,$16,$BF,$8F,$01,$CF,$EA,$41,$41,$40,$DE,$5D,$AE,$22,$23,$B0,$03,$61,$A3,$96,$17,$7A,$9C,$B4,$10,$FF,$61,$F2,$00,$15,$AD"
+//
+//          msg: 'abcdefghijklmnopqrstuvwxyz'
+//          result: "$71,$C4,$80,$DF,$93,$D6,$AE,$2F,$1E,$FA,$D1,$44,$7C,$66,$C9,$52,$5E,$31,$62,$18,$CF,$51,$FC,$8D,$9E,$D8,$32,$F2,$DA,$F1,$8B,$73"
+//
+//          msg: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+//          result: "$D6,$EC,$68,$98,$DE,$87,$DD,$AC,$6E,$5B,$36,$11,$70,$8A,$7A,$A1,$C2,$D2,$98,$29,$33,$49,$CC,$1A,$6C,$29,$9A,$1D,$B7,$14,$9D,$38"
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

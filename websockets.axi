@@ -5,201 +5,227 @@ program_name='websockets'
 // 
 // Description:
 //
-//   - This include file provides NetLinx management of client-side websockets as defined in RFC 6455 (see 
-//     https://tools.ietf.org/html/rfc6455).
+//    - This include file provides NetLinx management of client-side websockets as defined in RFC 6455 (see 
+//      https://tools.ietf.org/html/rfc6455).
 //
-//   - It provides functions to open/close websockets as well as send/receive data on websockets.
+//    - It provides functions to open/close websockets as well as send/receive data on websockets.
 //
-//   - Multiple websockets can be managed simultaneously with minimal programming outside of this include.
+//    - Multiple websockets can be managed simultaneously with minimal programming outside of this include.
 //
-//   - Callback functions are provided to be implemented outside the include file by the "main" program. These
-//     callback functions will be triggered by this include file whenever an "event" occurs on a websocket.
+//    - Callback functions are provided to be implemented outside the include file by the "main" program. These
+//      callback functions will be triggered by this include file whenever an "event" occurs on a websocket.
 //
-//   - The websockets include file performs session tracking through cooking storage which may be useful in situations 
-//     where multiple WebSockets may need to be opened to a web server (i.e., one to authenticate and another to 
-//     communicate).
+//    - The websockets include file performs session tracking through cooking storage which may be useful in situations 
+//      where multiple WebSockets may need to be opened to a web server (i.e., one to authenticate and another to 
+//      communicate).
 //
-//   - The websockets include file manages the WebSockets ping/pong automatically to avoid connections going stale.
+//    - The websockets include file manages the WebSockets ping/pong automatically to avoid connections going stale.
 //
 // Implementation:
 //
-//   - Any NetLinx program utilising the websockets include file must use either the INCLUDE or #INCLUDE keywords to 
-//     include the websockets include file within the program. While the INCLUDE and #INCLUDE keywords are both 
-//     functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE
-//     keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
-//     for backwards compatibility).
+//    - Any NetLinx program utilising the websockets include file must use either the INCLUDE or #INCLUDE keywords to 
+//      include the websockets include file within the program. While the INCLUDE and #INCLUDE keywords are both 
+//      functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE
+//      keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
+//      for backwards compatibility).
 //
-//     E.g:
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
 //
-//        DEFINE_PROGRAM 'Web Sockets Demo'
+//      E.g:
 //
-//        #INCLUDE 'websockets'
+//          define_program 'Web Sockets Demo'
 //
-//   - The following functions are provided to manage the websockets:
+//          #include 'websockets'
 //
-//        webSocketOpen(dev socket, char url[], char subprotocols[], char sessionId[])
+// Usage:
 //
-//           socket:                  NetLinx socket device (e.g., 0:2:0)
-//           url:                     URL for the WebSocket to connect to (e.g: 'ws://echo.websocket.org')
-//           subprotocols (optional): Sub-protocol or list of protocols to communicate at an application level (e.g: 
-//                                    'chat', 'chat superchat'). Can be empty string ''.
-//                                    The full list of registered WebSocket Subprotocols (as at time of writing) is 
-//                                    provided within the DEFINE_CONSTANT section of the websockets include file.
-//           sessionId (optional):    Session ID for tracking a session with a webserver. Can be empty string ''. The
-//                                    session ID is stored against the WebSocket and can get obtained at any time by
-//                                    calling the webSocketGetSessionId function. The stored session ID will be updated
-//                                    if the webserver includes a 'Set-Cookie' header field in the HTTP response during
-//                                    the WebSocket Open Handshake.
+//    - The following functions are provided to manage the websockets:
 //
-//           E.g.1:  webSocketOpen(0:2:0,'ws://echo.websocket.org','','');
+//          webSocketOpen(dev socket, char url[], char subprotocols[], char sessionId[])
 //
-//           E.g.2:  webSocketOpen(0:2:0,'wss://echo.websocket.org','soap','');
+//              socket:                  NetLinx socket device (e.g., 0:2:0)
 //
-//           E.g.3:  webSocketOpen(0:2:0,'ws://ws.websocketstest.com:8080/service','','');
+//              url:                     URL for the WebSocket to connect to (e.g: 'ws://echo.websocket.org')
 //
-//           E.g.4:  webSocketOpen(0:2:0,'ws://192.168.7.118/login','','JSESSIONID=1iamqqta2o6hzbqjzfpdw1piy');
+//              subprotocols (optional): Sub-protocol or list of protocols to communicate at an application level (e.g: 
+//                                       'chat', 'chat superchat'). Can be empty string ''.
+//                                       The full list of registered WebSocket Subprotocols (as at time of writing) is 
+//                                       provided within the DEFINE_CONSTANT section of the websockets include file.
 //
-//           Note: If url is prefixed with 'ws://' an unsecured websocket will be opened on TCP port 80. If
-//           wsResource is prefixed with 'wss://' a secure websocket will be opened on TCP port 443. Alternatively, if
-//           the url contains a port this will be used instead (e.g., 'ws://ws.websocketstest.com:8080/service').
+//              sessionId (optional):    Session ID for tracking a session with a webserver. Can be empty string ''. The
+//                                       session ID is stored against the WebSocket and can get obtained at any time by
+//                                       calling the webSocketGetSessionId function. The stored session ID will be updated
+//                                       if the webserver includes a 'Set-Cookie' header field in the HTTP response during
+//                                       the WebSocket Open Handshake.
 //
-//        webSocketSend(dev socket, char data[])
+//          E.g:
 //
-//           socket:               NetLinx socket device (e.g., 0:2:0)
-//           data:                 Data to send.
+//              webSocketOpen(0:2:0,'ws://echo.websocket.org','','');
 //
-//           E.g: webSocketSend(dvSocket,'Rock it with HTML WebSockets!');
+//          E.g:
 //
-//        webSocketClose(dev socket, integer code, char reason[])
+//              webSocketOpen(0:2:0,'wss://echo.websocket.org','soap','');
 //
-//           socket:               NetLinx socket device (e.g., 0:2:0)
-//           code:                 Status code indicating why we are closing the connection
-//           reason:               Human-readable string indicating why we are closing the connection.
+//          E.g:
 //
-//           E.g: webSocketClose(dvSocket,0,'');
+//              webSocketOpen(0:2:0,'ws://ws.websocketstest.com:8080/service','','');
 //
-//   - There are 4 x callback functions defined within the websockets include file: webSocketOnOpen, webSocketOnClose,
-//     webSocketOnError, and webSocketOnMessage. These callback functions will be called by the websockets include
-//     file when corresponding "events" trigger on the websocket.
+//          E.g:
 //
-//     The callback functions should not be edited within the websockets include file. Instead, the callback functions
-//     should be copied into the main program and then the code statements within the functions can be customised for 
-//     the program. In this way, multiple NetLinx modules within the same program (or even different programs) can each
-//     make use of the websocket include file without having to make multiple versions of the websockets include file
-//     each with different code within the callback functions.
+//              webSocketOpen(0:2:0,'ws://192.168.7.118/login','','JSESSIONID=1iamqqta2o6hzbqjzfpdw1piy');
 //
-//     Note that each of the callback functions are surrounded by #IF_NOT_DEFINED and #END_IF statements within the
-//     websockets include file. These statements MUST NOT be copied into the main program, just the function itself.
-//     The code within the open and closing braces of the function can then be completely customised.
+//          Note: If url is prefixed with 'ws://' an unsecured websocket will be opened on TCP port 80. If
+//          wsResource is prefixed with 'wss://' a secure websocket will be opened on TCP port 443. Alternatively, if
+//          the url contains a port this will be used instead (e.g., 'ws://ws.websocketstest.com:8080/service').
 //
-//     Finally, for each of the callback functions implemented within the main program a corresponding #DEFINE
-//     statement MUST be placed in the main program ABOVE the #INCLUDE statement which includes the websocket include
-//     file. The #DEFINE statement should use a symbol matching the symbol used by the #IF_NOT_DEFINED statement above
-//     the definition of the callback function within the websockets include file.
+//          webSocketSend(dev socket, char data[])
 //
-//     E.g: The webSocketsOnClose callback function is defined within the websockets include file like so:
+//              socket:               NetLinx socket device (e.g., 0:2:0)
 //
-//        #IF_NOT_DEFINED WEBSOCKET_EVENT_CLOSE
-//        define_function webSocketOnClose(dev webSocket) {
-//        	send_string 0, "'webSocketOnClose(',itoa(webSocket.number),':',itoa(webSocket.port),':',itoa(webSocket.system),')'"
-//        }
-//        #END_IF
+//              data:                 Data to send.
+//
+//              E.g:
+//
+//                  webSocketSend(dvSocket,'Rock it with HTML WebSockets!');
+//
+//          webSocketClose(dev socket, integer code, char reason[])
+//
+//              socket:               NetLinx socket device (e.g., 0:2:0)
+//
+//              code:                 Status code indicating why we are closing the connection
+//
+//              reason:               Human-readable string indicating why we are closing the connection.
+//
+//              E.g:
+//
+//                  webSocketClose(dvSocket,0,'');
+//
+//    - There are 4 x callback functions defined within the websockets include file: webSocketOnOpen, webSocketOnClose,
+//      webSocketOnError, and webSocketOnMessage. These callback functions will be called by the websockets include
+//      file when corresponding "events" trigger on the websocket.
+//
+//      The callback functions should not be edited within the websockets include file. Instead, the callback functions
+//      should be copied into the main program and then the code statements within the functions can be customised for 
+//      the program. In this way, multiple NetLinx modules within the same program (or even different programs) can each
+//      make use of the websocket include file without having to make multiple versions of the websockets include file
+//      each with different code within the callback functions.
+//
+//      Note that each of the callback functions are surrounded by #IF_NOT_DEFINED and #END_IF statements within the
+//      websockets include file. These statements MUST NOT be copied into the main program, just the function itself.
+//      The code within the open and closing braces of the function can then be completely customised.
+//
+//      Finally, for each of the callback functions implemented within the main program a corresponding #DEFINE
+//      statement MUST be placed in the main program ABOVE the #INCLUDE statement which includes the websocket include
+//      file. The #DEFINE statement should use a symbol matching the symbol used by the #IF_NOT_DEFINED statement above
+//      the definition of the callback function within the websockets include file.
+//
+//      E.g: The webSocketsOnClose callback function is defined within the websockets include file like so:
+//
+//          #if_not_defined WEBSOCKET_EVENT_CLOSE
+//          define_function webSocketOnClose(dev webSocket) {
+//              send_string 0, "'webSocketOnClose(',itoa(webSocket.number),':',itoa(webSocket.port),':',itoa(webSocket.system),')'"
+//          }
+//          #end_if
 // 
-//     This callback function SHOULD be implemented in the outside program as follows:
+//      This callback function SHOULD be implemented in the outside program as follows:
 //
-//        DEFINE_PROGRAM 'Web Sockets Demo'
+//          At the top of the program, make sure to place the #DEFINE compiler directive above the #include compiler directive:
 //
-//        #DEFINE WEBSOCKET_EVENT_CLOSE
-//        #INCLUDE 'websockets'
+//              define_program 'Web Sockets Demo'
 //
-//        define_function webSocketOnClose(dev webSocket) {
-//        	// code goes here
-//        }
+//              #define WEBSOCKET_EVENT_CLOSE
+//              #include 'websockets'
 //
-//     Implementing the callback function as shown above guarantees that the function defined with the outside program
-//     will be called instead of the unimplemented callback function defined within the websockets include file.
+//          Then, lower in the code, implement the webSocketOnClose function:
 //
-//   - Some webservers may require authentication via one websocket before another websocket can be opened for 
-//     communication. In these scenarios the "comm" websocket will need to maintain the same session with the webserver
-//     that was created for the "auth" websocket. When the "auth" websocket is initially establishing itself with the
-//     webserver a HTTP handshake (known as the WebSocket Open Handshake) is performed and the webserver will send
-//     a session ID to the "auth" websocket within the 'Set-Cookie' header field. When the "comm" websocket establishes
-//     a connection to the webserver it will need to send the same session ID to the webserver during the intial HTTP
-//     handshake within the 'Cookie' header field.
-//
-//     The websockets include file maintains a record of session ID's for each websocket created. If the sessionId
-//     parameter contained the empty string ('') when the WebSocketOpen function was called the HTTP GET request sent
-//     to the webserver will not contain a 'Cookie' header field.
-//
-//     E.g:
-//
-//        webSocketOpen(dvSocketAuth,'ws://test.server.org','','');
-//
-//     If the sessionId parameter was not empty when the WebSocketOpen function was called this value will be cached
-//     against the websocket in the websockets include file and sent to the webserver in the 'Cookie' header field of 
-//     the HTTP GET request.
-//
-//     E.g:
-//
-//        webSocketOpen(dvSocketAuth,'ws://test.server.org','','JSESSIONID=xnjgi1kj1jd7kfbjwvmqyg5m');
-//
-//     If the servers' HTTP response during the WebSocket Open Handshake contains a 'Set-Cookie' header field and the
-//     value contains a session ID this session ID will replace the cached session ID for the WebSocket in the
-//     websockets include file. At anytime, the cached session ID for a WebSocket can be read by calling the
-//     WebSocketGetSessionId function.
-//
-//     E.g:
-//
-//        webSocketGetSessionId(dvSocketAuth);
-//
-//     To implement session ID tracking across multiple WebSockets it is recommended to first open an "auth" WebSocket
-//     and pass an empty string ('') to the sessionId parameter of the WebSocketOpen function - the server will send
-//     a session ID when the WebSocket is being established and this will be cached against the "auth" WebSocket.
-//
-//     E.g:
-//
-//        webSocketOpen(dvSocketAuth,'ws://test.server.org/login','','');
-//
-//     Next, capture the open event for the "auth" webserver in the webSocketOpen function and send the login data
-//     to the webserver to login.
-//
-//     E.g:
-//
-//        define_function webSocketOnOpen(dev socket) {
-//           if(socket == dvSocketAuth) {
-//              webSocketSend(dvSocketAuth,'{"login":{"username":"administrator","password":"p@55w0rd"}}');
-//           }
-//        }
-//
-//     Next, listen for login confirmation from the webserver in the webSocketOnMessage function and then open a new
-//     WebSocket. Call the webSocketGetSessionId function to read the cached session ID from the "auth" webserver and
-//     pass this to the sessionId parameter of the webSocketOpen function when creating the new WebSocket.
-//
-//     E.g:
-//
-//        define_function webSocketOnMessage(dev socket, char data[]) {
-//           if(socket == dvSocketAuth) {
-//              if(data == '{"login":"success"}') {
-//                 webSocketOpen(dvSocketComm,'ws://test.server.org/main','',webSocketGetCookie(dvSocketAuth));
+//              define_function webSocketOnClose(dev webSocket) {
+//                  // code goes here
 //              }
-//           }
-//        }
 //
-//     Next, using the webSocketOnOpen function listen for the "auth" websocket being opened:
+//          Implementing the callback function as shown above guarantees that the function defined in the outside program
+//          file will be called instead of the unimplemented callback function defined within the websockets include file.
 //
+//    - Some webservers may require authentication via one websocket before another websocket can be opened for 
+//      communication. In these scenarios the "comm" websocket will need to maintain the same session with the webserver
+//      that was created for the "auth" websocket. When the "auth" websocket is initially establishing itself with the
+//      webserver a HTTP handshake (known as the WebSocket Open Handshake) is performed and the webserver will send
+//      a session ID to the "auth" websocket within the 'Set-Cookie' header field. When the "comm" websocket establishes
+//      a connection to the webserver it will need to send the same session ID to the webserver during the intial HTTP
+//      handshake within the 'Cookie' header field.
 //
-//        define_function webSocketOnOpen(dev socket) {
-//           if(socket == dvSocketAuth) {
-//              webSocketSend(dvSocketAuth,'{"login":{"username":"administrator","password":"p@55w0rd"}}');
-//           } else if(socket == dvSocketComm) {
-//              // insert code here
-//           }
-//        }
+//      The websockets include file maintains a record of session ID's for each websocket created. If the sessionId
+//      parameter contained the empty string ('') when the WebSocketOpen function was called the HTTP GET request sent
+//      to the webserver will not contain a 'Cookie' header field.
 //
-//     At this point, the "auth" websocket will not only be open but also authenticated with the webserver.
+//      E.g:
 //
-//     NOTE: If the HTTP response during the WebSocket Open Handshake contains multiple 'Set-Cookie' header fields
-//     the session tracking in the websockets include file may not work (UNTESTED).
+//          webSocketOpen(dvSocketAuth,'ws://test.server.org','','');
+//
+//      If the sessionId parameter was not empty when the WebSocketOpen function was called this value will be cached
+//      against the websocket in the websockets include file and sent to the webserver in the 'Cookie' header field of 
+//      the HTTP GET request.
+//
+//      E.g:
+//
+//          webSocketOpen(dvSocketAuth,'ws://test.server.org','','JSESSIONID=xnjgi1kj1jd7kfbjwvmqyg5m');
+//
+//      If the servers' HTTP response during the WebSocket Open Handshake contains a 'Set-Cookie' header field and the
+//      value contains a session ID this session ID will replace the cached session ID for the WebSocket in the
+//      websockets include file. At anytime, the cached session ID for a WebSocket can be read by calling the
+//      WebSocketGetSessionId function.
+//
+//      E.g:
+//
+//          webSocketGetSessionId(dvSocketAuth);
+//
+//      To implement session ID tracking across multiple WebSockets it is recommended to first open an "auth" WebSocket
+//      and pass an empty string ('') to the sessionId parameter of the WebSocketOpen function - the server will send
+//      a session ID when the WebSocket is being established and this will be cached against the "auth" WebSocket.
+//
+//      E.g:
+//
+//          webSocketOpen(dvSocketAuth,'ws://test.server.org/login','','');
+//
+//      Next, capture the open event for the "auth" webserver in the webSocketOpen function and send the login data
+//      to the webserver to login.
+//
+//      E.g:
+//
+//          define_function webSocketOnOpen(dev socket) {
+//              if(socket == dvSocketAuth) {
+//                  webSocketSend(dvSocketAuth,'{"login":{"username":"administrator","password":"p@55w0rd"}}');
+//              }
+//          }
+//
+//      Next, listen for login confirmation from the webserver in the webSocketOnMessage function and then open a new
+//      WebSocket. Call the webSocketGetSessionId function to read the cached session ID from the "auth" webserver and
+//      pass this to the sessionId parameter of the webSocketOpen function when creating the new WebSocket.
+//
+//      E.g:
+//
+//          define_function webSocketOnMessage(dev socket, char data[]) {
+//              if(socket == dvSocketAuth) {
+//                  if(data == '{"login":"success"}') {
+//                      webSocketOpen(dvSocketComm,'ws://test.server.org/main','',webSocketGetCookie(dvSocketAuth));
+//                  }
+//              }
+//          }
+//
+//      Next, using the webSocketOnOpen function listen for the "auth" websocket being opened:
+//
+//          define_function webSocketOnOpen(dev socket) {
+//              if(socket == dvSocketAuth) {
+//                  webSocketSend(dvSocketAuth,'{"login":{"username":"administrator","password":"p@55w0rd"}}');
+//              } else if(socket == dvSocketComm) {
+//                  // insert code here
+//              }
+//          }
+//
+//      At this point, the "auth" websocket will not only be open but also authenticated with the webserver.
+//
+//      NOTE: If the HTTP response during the WebSocket Open Handshake contains multiple 'Set-Cookie' header fields
+//      the session tracking in the websockets include file may not work (UNTESTED).
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

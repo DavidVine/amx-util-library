@@ -9,25 +9,37 @@ program_name='hash'
 //
 // Implementation:
 //
-//   - Any NetLinx program utilising the hash include file must use either the INCLUDE or #INCLUDE keywords to include 
-//     the hash include file within the program. While the INCLUDE and #INCLUDE keywords are both functionally 
-//     equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE keyword is 
-//     from the earlier Axcess programming language and is included within the NetLinx programming language for 
-//     backwards compatibility).
+//    - Any NetLinx program utilising the hash include file must use either the INCLUDE or #INCLUDE keywords to include 
+//      the hash include file within the program. While the INCLUDE and #INCLUDE keywords are both functionally 
+//      equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE keyword is 
+//      from the earlier Axcess programming language and is included within the NetLinx programming language for 
+//      backwards compatibility).
 //
-//     E.g:
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
 //
-//        DEFINE_PROGRAM 'Hash Demo'
+//      E.g:
 //
-//        #INCLUDE 'hash'
+//          define_program 'Hash Demo'
 //
-//   - To create a message digest simply call the hash function and pass through an ASCII string indicating what
-//     hashing scheme is to be used followed by the data to be hashed. The hash function will return the message digest
-//     in a char array.
+//          #include 'hash'
 //
-//     E.g:
+// Usage:
 //
-//        hashedPassword = hash('sha1','p@55w0rd');
+//    - To create a message digest simply call the hash function and pass through an ASCII string indicating what
+//      hashing scheme is to be used followed by the data to be hashed. The hash function will return the message
+//      digest in a char array.
+//
+//      E.g:
+//
+//          hashedPassword = hash('md5','p@55w0rd');
+//          // returns "$39,$F1,$3D,$60,$B3,$F6,$FB,$E0,$BA,$16,$36,$B0,$A9,$28,$3C,$50"
+//
+//          hashedPassword = hash('sha1','p@55w0rd');
+//          // returns "$CE,$0B,$2B,$77,$1F,$7D,$46,$8C,$01,$41,$91,$8D,$AE,$A7,$04,$E0,$E5,$AD,$45,$DB"
+//
+//          hashedPassword = hash('sha256','p@55w0rd');
+//          // returns "$59,$F4,$6B,$B9,$0C,$FF,$B0,$ED,$7C,$7E,$5D,$B5,$8B,$B3,$00,$F3,$BC,$D7,$14,$F5,$1A,$E7,$23,$ED,$91,$B0,$6A,$3E,$13,$D4,$D5,$B6"
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -5,46 +5,52 @@ program_name='sha1'
 // 
 // Description:
 //
-//   - This include file provides a NetLinx implementation of the SHA-1 (Secure Hash Algorithm 1) cryptographic hash
-//     function as defined in RFC 3174 (see https://tools.ietf.org/html/rfc3174)
+//    - This include file provides a NetLinx implementation of the SHA-1 (Secure Hash Algorithm 1) cryptographic hash
+//      function as defined in RFC 3174 (see https://tools.ietf.org/html/rfc3174).
 //
 // Implementation:
 //
-//   - Any NetLinx program utilising the sha1 include file must use either the INCLUDE or #INCLUDE keywords to include 
-//     the sha1 include file within the program. While the INCLUDE and #INCLUDE keywords are both functionally 
-//     equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE keyword is 
-//     from the earlier Axcess programming language and is included within the NetLinx programming language for 
-//     backwards compatibility).
+//    - Any NetLinx program utilising the sha1 include file must use either the INCLUDE or #INCLUDE keywords to include 
+//      the sha1 include file within the program. While the INCLUDE and #INCLUDE keywords are both functionally 
+//      equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE keyword is 
+//      from the earlier Axcess programming language and is included within the NetLinx programming language for 
+//      backwards compatibility).
 //
-//     E.g:
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
 //
-//        DEFINE_PROGRAM 'SHA-1 Demo'
+//      E.g:
 //
-//        #INCLUDE 'sha1'
+//          define_program 'SHA-1 Demo'
 //
-//   - The sha1 function provided within this include file takes a message of unbound length and returns a 160-bit
-//     (20-byte) message digest in a CHAR array.
+//          #include 'sha1'
 //
-//     E.g:
+// Usage:
 //
-//         hashedPassword = sha1('p@55w0rd');
+//    - The sha1 function provided within this include file takes a message of unbound length and returns a 160-bit
+//      (20-byte) message digest in a CHAR array.
 //
-//   - Some example SHA-1 results to test against are as follows (note the results are hex values, not ASCII strings):
+//      E.g:
 //
-//     msg: ''
-//     result: "$da,$39,$a3,$ee,$5e,$6b,$4b,$0d,$32,$55,$bf,$ef,$95,$60,$18,$90,$af,$d8,$07,$09"
+//          hashedPassword = sha1('p@55w0rd');
+//          // returns "$CE,$0B,$2B,$77,$1F,$7D,$46,$8C,$01,$41,$91,$8D,$AE,$A7,$04,$E0,$E5,$AD,$45,$DB"
 //
-//     msg: 'The quick brown fox jumps over the lazy dog'
-//     result: "$2f,$d4,$e1,$c6,$7a,$2d,$28,$fc,$ed,$84,$9e,$e1,$bb,$76,$e7,$39,$1b,$93,$eb,$12"
+//    - Some example SHA-1 results to test against are as follows (note the results are hex values, not ASCII strings):
 //
-//     msg: 'abc'
-//     result: "$a9,$99,$3e,$36,$47,$06,$81,$6a,$ba,$3e,$25,$71,$78,$50,$c2,$6c,$9c,$d0,$d8,$9d"
+//          msg: ''
+//          result: "$da,$39,$a3,$ee,$5e,$6b,$4b,$0d,$32,$55,$bf,$ef,$95,$60,$18,$90,$af,$d8,$07,$09"
 //
-//     msg: 'abcdefghijklmnopqrstuvwxyz'
-//     result: "$32,$d1,$0c,$7b,$8c,$f9,$65,$70,$ca,$04,$ce,$37,$f2,$a1,$9d,$84,$24,$0d,$3a,$89"
+//          msg: 'The quick brown fox jumps over the lazy dog'
+//          result: "$2f,$d4,$e1,$c6,$7a,$2d,$28,$fc,$ed,$84,$9e,$e1,$bb,$76,$e7,$39,$1b,$93,$eb,$12"
 //
-//     msg: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-//     result: "$80,$25,$6f,$39,$a9,$d3,$08,$65,$0a,$c9,$0d,$9b,$e9,$a7,$2a,$95,$62,$45,$45,$74"
+//          msg: 'abc'
+//          result: "$a9,$99,$3e,$36,$47,$06,$81,$6a,$ba,$3e,$25,$71,$78,$50,$c2,$6c,$9c,$d0,$d8,$9d"
+//
+//          msg: 'abcdefghijklmnopqrstuvwxyz'
+//          result: "$32,$d1,$0c,$7b,$8c,$f9,$65,$70,$ca,$04,$ce,$37,$f2,$a1,$9d,$84,$24,$0d,$3a,$89"
+//
+//          msg: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+//          result: "$80,$25,$6f,$39,$a9,$d3,$08,$65,$0a,$c9,$0d,$9b,$e9,$a7,$2a,$95,$62,$45,$45,$74"
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -10,24 +10,39 @@ program_name='base64'
 //
 // Implementation:
 //
-//   - Any NetLinx program utilising the base64 include file must use either the INCLUDE or #INCLUDE keywords to 
-//     include the base64 include file within the program. While the INCLUDE and #INCLUDE keywords are both 
-//     functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE
-//     keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
-//     for backwards compatibility).
+//    - Any NetLinx program utilising the base64 include file must use either the INCLUDE or #INCLUDE keywords to 
+//      include the base64 include file within the program. While the INCLUDE and #INCLUDE keywords are both 
+//      functionally equivalent the #INCLUDE keyword is recommended only because it is the NetLinx keyword (the INCLUDE
+//      keyword is from the earlier Axcess programming language and is included within the NetLinx programming language 
+//      for backwards compatibility).
 //
-//     E.g:
+//      Note: The NetLinx language is not case-sensitive when it comes to keywords. The convention used in this project
+//      is for keywords to be written in lower case (e.g., include instead of INCLUDE).
 //
-//        DEFINE_PROGRAM 'Encoding Demo'
+//      E.g:
 //
-//        #INCLUDE 'base64'
+//          define_program 'Encoding Demo'
 //
-//   - The base64 function provided within this include file takes a message of unbound length and returns a base64
-//     encoding of the message.
+//          #include 'base64'
 //
-//     E.g:
+// Usage:
 //
-//         encodedMessage = base64Encode('Hello World'); // returns 'SGVsbG8gV29ybGQ='
+//    - The base64Encode function provided within this include file takes a message of unbound length and returns a base64
+//      encoding of the message.
+//
+//      E.g:
+//
+//          encodedMessage = base64Encode('Hello World');
+//          // returns 'SGVsbG8gV29ybGQ='
+//
+//
+//    - The base64Decode function provided within this include file takes a message of unbound length and returns a base64
+//      decoding of the message.
+
+//      E.g:
+//
+//          decodedMessage = base64Decode('SGVsbG8gV29ybGQ');
+//          // returns 'Hello World'
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -40,6 +55,7 @@ define_constant
 char BASE64_ALPHABET[64]    = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 char BASE64URL_ALPHABET[64] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 char BASE64_PAD = '=';
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 

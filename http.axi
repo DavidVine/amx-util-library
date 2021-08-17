@@ -214,7 +214,7 @@ char HTTP_HEADER_FIELD_PUBLIC_KEY_PINS             [] = 'Public-Key-Pins'; // Pu
 char HTTP_HEADER_FIELD_REFRESH                     [] = 'Refresh'; // Refresh: 5; url=http://www.w3.org/pub/WWW/People.html
 char HTTP_HEADER_FIELD_RETRY_AFTER                 [] = 'Retry-After'; // Retry-After: 120     |     Retry-After: Fri, 07 Nov 2014 23:59:59 GMT
 char HTTP_HEADER_FIELD_SERVER                      [] = 'Server'; // Server: Apache/2.4.1 (Unix)
-char HTTP_HEADER_FIELD_SERT_COOKIE                 [] = 'Set-Cookie'; // Set-Cookie: UserID=JohnDoe; Max-Age=3600; Version=1
+char HTTP_HEADER_FIELD_SET_COOKIE                  [] = 'Set-Cookie'; // Set-Cookie: UserID=JohnDoe; Max-Age=3600; Version=1
 char HTTP_HEADER_FIELD_STATUS                      [] = 'Status'; // Status: 200 OK
 char HTTP_HEADER_FIELD_STRICT_TRANSPORT_SECURITY   [] = 'Strict-Transport-Security'; // Strict-Transport-Security: max-age=16070400; includeSubDomains
 char HTTP_HEADER_FIELD_TRAILER                     [] = 'Trailer'; // Trailer: Max-Forwards

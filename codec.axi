@@ -68,7 +68,7 @@ define_function char[1024] encode(char scheme[], char data[]) {
 	switch(scheme) {
 		case 'base64': return base64Encode(data);
 		
-		case 'base64Url': return base64UrlEncode(data);
+		case 'base64Url': return base64UrlEncode(data, true);
 	}
 	return '';
 }

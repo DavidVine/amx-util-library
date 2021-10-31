@@ -24,6 +24,210 @@ program_name='http'
 //
 //          #include 'http'
 //
+// Usage:
+//
+//    - A HTTP request can be built be creating a HttpRequest object and updating its version, method, request URI, 
+//      headers, and body.
+//
+//    E.g:
+//
+//        HttpRequest request;
+//
+//        request.method = HTTP_METHOD_GET;
+//        request.requestUri = '/';
+//        request.version = 1.1;
+//        httpSetHeader(request.headers, HTTP_HEADER_FIELD_HOST, 'www.someHTTPserver.com');
+//        httpSetHeader(request.headers, HTTP_HEADER_FIELD_CONTENT_TYPE, 'text/plain');
+//        httpSetHeader(request.headers, HTTP_HEADER_FIELD_CONTENT_LENGTH, '9');
+//        request.body = 'Some data';
+//
+//    - To send the HTTP request (after opening the socket to the webserver) the HttpRequest object needs to be 
+//      converted to string format for transport.
+//
+//    E.g:
+//
+//        send_string httpServer, httpRequestToString(request);
+//
+//        This results in the following HTTP request being sent:
+//
+//           *------------------------*
+//           |GET / HTTP/1.1          |
+//           |Host: www.someHTTPserver.com    |
+//           |Content-Type: text/plain|
+//           |Content-Length: 9       |
+//           |Some data               |
+//           |                        |
+//           *------------------------*
+//
+//    - To parse a HTTP response received from a HTTP server the incoming data needs to be read into a HttpResponse
+//      object.
+//
+//    E.g:
+//
+//        data_event[httpServer] {
+//
+//            string: {
+//
+//                stack_var HttpResponse response;
+//
+//                httpParseResponse(response, data.text);
+//
+//                ...
+//            }
+//        }
+//
+//    - If a HTTP response is large enough it may need to be processed over multiple data events. For this reason it is
+//      recommended to use a global buffer to store the incoming data from the HTTP server and then test the result of
+//      calling httpParseResponse eaqch time a new chunk of data is received to confirm receipt of a complete HTTP 
+//      request.
+//
+//    E.g:
+//
+//        define_device
+//
+//        httpServer = 0:2:0
+//
+//
+//        define_variable
+//
+//        char httpResponseBuffer[2048]
+//
+//
+//        define__start
+//
+//        create_buffer httpServer, httpResponseBuffer
+//
+//
+//        define_event
+//
+//        data_event[httpServer] {
+//
+//            string: {
+//
+//                stack_var HttpResponse response;
+//
+//                if(httpParseResponse(response, httpResponseBuffer)) {
+//
+//                    clear_buffer httpResponseBuffer
+//
+//                    // process the HTTP request object
+//                    ...
+//                }
+//            }
+//        }
+//
+//    - The HttpResponse object can then be processed.
+//
+//        - response.status contains the HTTP status. The status code in the HTTP response can be checked against the 
+//          defined HTTP status code constants.
+//
+//        E.g:
+//
+//            switch(response.status.code) {
+//
+//                case HTTP_STATUS_CODE_OK: {
+//                    // continue processing the HTTP request object
+//                    ...
+//                }
+//
+//                case HTTP_STATUS_CODE_NOT_FOUND: {
+//                    AMX_LOG(AMX_ERROR,"'HTTP Response indicates request URI was not found');
+//                }
+//
+// 
+//                case HTTP_STATUS_CODE_METHOD_NOT_ALLOWED: {
+//                    AMX_LOG(AMX_ERROR,"'HTTP Response indicates request method was not allowed');
+//                }
+//
+//                case HTTP_STATUS_CODE_UNAUTHORIZED: {
+//                    AMX_LOG(AMX_ERROR,"'HTTP Response indicates request was unauthorized');
+//                }
+// 
+//                case HTTP_STATUS_CODE_FORBIDDEN: {
+//                    AMX_LOG(AMX_ERROR,"'HTTP Response indicates request was unforbidden');
+//                }
+//
+//                default: {
+//
+//                    AMX_LOG(AMX_ERROR,"'Unhandled HTTP Response Status Code: ',itoa(response.status.code),', ',response.status.message");
+//                }
+//            }
+//
+//
+//        - The headers of the HTTP response (stored in response.headers) should be examined. For example, you may need
+//          to retrieve a cookie from the HTTP response so that it can be included with subsequent HTTP requests sent 
+//          to the HTTP server.          
+//
+//        E.g:
+//
+//            if(httpHasHeader(response.headers, HTTP_HEADER_FIELD_SET_COOKIE)) {
+//
+//                cookie = httpGetHeader(response.headers, HTTP_HEADER_FIELD_SET_COOKIE);
+//            }
+//
+//            ...
+//            httpSetHeader(request.headers, HTTP_HEADER_FIELD_COOKIE, cookie);
+//            ...
+//
+//       
+//        - response.body contains the body of the HTTP response.
+//
+//    - A HTTP server may require authentication for access control to some resources. Typically the mechanism to
+//      achieve this involves the HTTP server issuing a challenge to the HTTP client which includes information 
+//      about the authentication mechanism required.
+//
+//      There are multiple ways that authentication may be implemented by a HTTP server and it is beyond the scope of 
+//      this project to provide example for each one.
+//
+//      One method of issing a challenge is for the HTTP server to respond with a 401 (Unauthorized) status code if
+//      the HTTP request from the client does not meet the authentication requirements. The response from the HTTP
+//      server typically provides information about the challenge within the 'WWW-Authenticate' header. For the client
+//      to authenticate with the HTTP server future requests sent to the server need to include the challenge response
+//      within the 'Authorization' header.
+//
+//      E.g:
+//
+//          HTTP Client -> GET / HTTP/1.1                                      -> HTTP Server
+//
+//          HTTP Client <- HTTP/1.1 401 Unauthorized                           <- HTTP Server
+//                         WWW-Authenticate: Basic realm=Access to the site"
+//
+//          HTTP Client -> GET / HTTP/1.1                                      -> HTTP Server
+//                         Authorization: Basic YWRtaW46cGFzc3dvcmQ
+//
+//          HTTP Client <- HTTP/1.1 200 OK                                     <- HTTP Server
+//                             or
+//                         HTTP/1.1 401 Unauthorized
+//                         WWW-Authenticate: Basic realm=Access to the site"
+//
+//      Two common types of authentication mechanism are Basic and Digest authentication. If the server issues a Basic
+//      authentication challenge the client must include a base64 encoding of the username and password seperated by
+//      a colon (:) in the 'Authorization header.
+//
+//      E.g:
+//
+//          HttpRequest request;
+//          char username[] = 'admin';
+//          char password[] = 'password';
+//
+//          request.method = HTTP_METHOD_GET;
+//          request.requestUri = '/';
+//          request.version = 1.1;
+//          httpSetHeader(request.headers, HTTP_HEADER_FIELD_HOST, 'www.someHTTPserver.com');
+//          httpSetHeader(request.headers, HTTP_HEADER_FIELD_AUTHORIZATION, httpBasicAuthentication(username, password));
+//
+//          send_string httpServer, httpRequestToString(request);
+//
+//          This results in the following HTTP request being sent:
+//
+//             *----------------------------------------*
+//             |GET / HTTP/1.1                          |
+//             |Host: www.someHTTPserver.com            |
+//             |Authorization: Basic YWRtaW46cGFzc3dvcmQ|
+//             |                                        |
+//             *----------------------------------------*
+//
+//
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if_not_defined __HTTP__

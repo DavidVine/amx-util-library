@@ -77,6 +77,7 @@ define_function print(char data[], integer multiLine) {
 					}
 				}
 			}
+			send_string 0, "'DEBUG: ',remove_string(temp,temp,1)"
 		}
 	}
 }

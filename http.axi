@@ -522,11 +522,22 @@ define_function integer httpParseResponse(HttpResponse response, char buffer[]) 
 			if(find_string(values[i],'chunked',1)) {
 				isChunked = true;
 				
-				if(!find_string(workingBuffer,"$0D,$0A,'0',$0D,$0A,$0D,$0A",1)) {
+				if(right_string(workingBuffer,7) != "$0D,$0A,'0',$0D,$0A,$0D,$0A") {
 					return false;
 				}
 				else {
-					tempResponse.body = remove_string(workingBuffer,"$0D,$0A,'0',$0D,$0A,$0D,$0A",1);
+					stack_var char chunkLength[5];
+					stack_var char chunk[1000000] // approx 1MB
+					while(workingBuffer != "'0',$0D,$0A,$0D,$0A") {
+						chunkLength = remove_string(workingBuffer,"$0D,$0A",1);
+						if(hextoi(chunkLength) > length_string(workingBuffer)){
+							return false
+						}
+						chunk = mid_string(workingBuffer,1,hextoi(chunkLength))
+						remove_string(workingBuffer, "chunk,$0D,$0A",1)
+						tempResponse.body = "tempResponse.body,chunk"
+					}
+					remove_string(workingBuffer,"'0',$0D,$0A,$0D,$0A",1);
 					httpCopyResponse(tempResponse,response);
 					buffer = right_string(buffer,length_array(workingBuffer));
 					return true;

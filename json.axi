@@ -73,8 +73,8 @@ struct JsonToken {
 }
 
 struct JsonPair {
-    char name[JSON_MAX_VALUE_NAME_LENGTH];
-	JsonToken jToken;
+	char name[JSON_MAX_VALUE_NAME_LENGTH];
+	JsonToken token;
 }
 
 struct JsonObj {
@@ -139,7 +139,7 @@ define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonObjGet(JsonObj jObj, char n
 	
 	for(i=1; i<=length_array(jObj.pairs); i++) {
 		if(jObj.pairs[i].name == name) {
-			return jObj.pairs[i].jToken.value;
+			return jObj.pairs[i].token.value;
 		}
 	}
 	
@@ -168,7 +168,7 @@ define_function char[7] jsonObjGetType(JsonObj jObj, char name[]) {
 	
 	for(i=1; i<=length_array(jObj.pairs); i++) {
 		if(jObj.pairs[i].name == name) {
-			return jObj.pairs[i].jToken.type;
+			return jObj.pairs[i].token.type;
 		}
 	}
 	
@@ -229,7 +229,7 @@ define_function jsonObjGetValues(JsonObj jObj, char values[JSON_MAX_OBJECT_VALUE
 	integer i;
 	
 	for(i=1; i<=length_array(jObj.pairs); i++) {
-		values[i] = jObj.pairs[i].jToken.value;
+		values[i] = jObj.pairs[i].token.value;
 	}
 	set_length_array(values,i-1);
 }
@@ -255,7 +255,7 @@ define_function jsonObjGetTypes(JsonObj jObj, char types[JSON_MAX_OBJECT_VALUES]
 	integer i;
 	
 	for(i=1; i<=length_array(jObj.pairs); i++) {
-		types[i] = jObj.pairs[i].jToken.value;
+		types[i] = jObj.pairs[i].token.value;
 	}
 	set_length_array(types,i-1);
 }
@@ -442,10 +442,10 @@ define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonStringifyObject(JsonObj jOb
 	
 	for(i=1; i<=length_array(jObj.pairs); i++) {
 		if(i == length_array(jObj.pairs)) {
-			objStr = "objStr,'"',jObj.pairs[i].name,'":',jsonStringifyValue(jObj.pairs[i].jToken)";
+			objStr = "objStr,'"',jObj.pairs[i].name,'":',jsonStringifyValue(jObj.pairs[i].token)";
 		}
 		else {
-			objStr = "objStr,'"',jObj.pairs[i].name,'":',jsonStringifyValue(jObj.pairs[i].jToken),','";
+			objStr = "objStr,'"',jObj.pairs[i].name,'":',jsonStringifyValue(jObj.pairs[i].token),','";
 		}
 	}
 	
@@ -790,21 +790,21 @@ define_function integer jsonParseObject(char jsonObjStr[], JsonObj jObj) {
 		
 		// get corresponding value
 		if(find_string(lower_string(tempJson),'true',1) == 1) { // boolean true
-			jObj.pairs[i].jToken.type = JSON_TYPE_BOOLEAN;
-			jObj.pairs[i].jToken.value = 'true';
-			AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].jToken.type,'][value: ',jObj.pairs[i].jToken.value,']'");
+			jObj.pairs[i].token.type = JSON_TYPE_BOOLEAN;
+			jObj.pairs[i].token.value = 'true';
+			AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].token.type,'][value: ',jObj.pairs[i].token.value,']'");
 			remove_string(tempJson,"'true'",1);
 		}
 		else if(find_string(lower_string(tempJson),'false',1) == 1) { // boolean false
-			jObj.pairs[i].jToken.type = JSON_TYPE_BOOLEAN;
-			jObj.pairs[i].jToken.value = 'false';
-			AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].jToken.type,'][value: ',jObj.pairs[i].jToken.value,']'");
+			jObj.pairs[i].token.type = JSON_TYPE_BOOLEAN;
+			jObj.pairs[i].token.value = 'false';
+			AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].token.type,'][value: ',jObj.pairs[i].token.value,']'");
 			remove_string(tempJson,"'false'",1);
 		}
 		else if(find_string(lower_string(tempJson),'null',1) == 1) { // null
-			jObj.pairs[i].jToken.type = JSON_TYPE_NULL;
-			jObj.pairs[i].jToken.value = 'null';
-			AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].jToken.type,'][value: ',jObj.pairs[i].jToken.value,']'");
+			jObj.pairs[i].token.type = JSON_TYPE_NULL;
+			jObj.pairs[i].token.value = 'null';
+			AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].token.type,'][value: ',jObj.pairs[i].token.value,']'");
 			remove_string(tempJson,"'null'",1);
 		}
 		else if(tempJson[1] == '"') { // string
@@ -814,10 +814,10 @@ define_function integer jsonParseObject(char jsonObjStr[], JsonObj jObj) {
 			while(j<=length_string(tempJson)) {
 				if((tempJson[j] == '"') && (tempJson[j-1] != '\')) {
 					foundClosingQuote = true;
-					jObj.pairs[i].jToken.type = JSON_TYPE_STRING;
-					jObj.pairs[i].jToken.value = mid_string(tempJson,2,j-2);
-					AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].jToken.type,'][value: ',jObj.pairs[i].jToken.value,']'");
-					remove_string(tempJson,"'"',jObj.pairs[i].jToken.value,'"'",1);
+					jObj.pairs[i].token.type = JSON_TYPE_STRING;
+					jObj.pairs[i].token.value = mid_string(tempJson,2,j-2);
+					AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].token.type,'][value: ',jObj.pairs[i].token.value,']'");
+					remove_string(tempJson,"'"',jObj.pairs[i].token.value,'"'",1);
 					break;
 				}
 				j++;
@@ -840,7 +840,7 @@ define_function integer jsonParseObject(char jsonObjStr[], JsonObj jObj) {
 		        tempJson[1] == '7' ||
 		        tempJson[1] == '8' ||
 		        tempJson[1] == '9') { // number
-			jObj.pairs[i].jToken.type = JSON_TYPE_NUMBER;
+			jObj.pairs[i].token.type = JSON_TYPE_NUMBER;
 			j = 1;
 			while(j<=length_string(tempJson) &&
 			      (tempJson[j] == '0' ||
@@ -859,11 +859,11 @@ define_function integer jsonParseObject(char jsonObjStr[], JsonObj jObj) {
 			      tempJson[j] == '-' ||
 			      tempJson[j] == '+')) {
 				
-				jObj.pairs[i].jToken.value = "jObj.pairs[i].jToken.value,tempJson[j]";
+				jObj.pairs[i].token.value = "jObj.pairs[i].token.value,tempJson[j]";
 				j++;
 			}
-			AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].jToken.type,'][value: ',jObj.pairs[i].jToken.value,']'");
-			remove_string(tempJson,jObj.pairs[i].jToken.value,1);
+			AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].token.type,'][value: ',jObj.pairs[i].token.value,']'");
+			remove_string(tempJson,jObj.pairs[i].token.value,1);
 		}
 		else if(tempJson[1] == '[') { // array
 			// look for matching closing ]
@@ -894,9 +894,9 @@ define_function integer jsonParseObject(char jsonObjStr[], JsonObj jObj) {
 						}
 						else { // we found our matching closing ]
 							foundClosingSquareBracket = true;
-							jObj.pairs[i].jToken.type = JSON_TYPE_ARRAY;
-							jObj.pairs[i].jToken.value = mid_string(tempJson,1,j);   // includes enclosing brackets '[' and ']'
-							AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].jToken.type,'][value: ',jObj.pairs[i].jToken.value,']'");
+							jObj.pairs[i].token.type = JSON_TYPE_ARRAY;
+							jObj.pairs[i].token.value = mid_string(tempJson,1,j);   // includes enclosing brackets '[' and ']'
+							AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].token.type,'][value: ',jObj.pairs[i].token.value,']'");
 							remove_string(tempJson,mid_string(tempJson,1,j),1);
 							break;
 						}
@@ -939,9 +939,9 @@ define_function integer jsonParseObject(char jsonObjStr[], JsonObj jObj) {
 						}
 						else { // we found our matching closing }
 							foundClosingCurlyBrace = true;
-							jObj.pairs[i].jToken.type = JSON_TYPE_OBJECT;
-							jObj.pairs[i].jToken.value = mid_string(tempJson,1,j);   // includes enclosing brackets '{' and '}'
-							AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].jToken.type,'][value: ',jObj.pairs[i].jToken.value,']'");
+							jObj.pairs[i].token.type = JSON_TYPE_OBJECT;
+							jObj.pairs[i].token.value = mid_string(tempJson,1,j);   // includes enclosing brackets '{' and '}'
+							AMX_LOG(AMX_DEBUG,"'json::jsonParseObj:[name: ',jObj.pairs[i].name,'][type: ',jObj.pairs[i].token.type,'][value: ',jObj.pairs[i].token.value,']'");
 							remove_string(tempJson,mid_string(tempJson,1,j),1);
 							break;
 						}
@@ -1021,8 +1021,8 @@ define_function char[50] jsonGet(char jsonSerialized[], char property[], JsonTok
 	{
 		if(jObj.pairs[i].name == property)
 		{
-			jToken.type = jObj.pairs[i].jToken.type;
-			jToken.value = jObj.pairs[i].jToken.value;
+			jToken.type = jObj.pairs[i].token.type;
+			jToken.value = jObj.pairs[i].token.value;
 			return jToken.type;
 		}
 	}

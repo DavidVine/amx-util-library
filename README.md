@@ -187,7 +187,7 @@ Usage:
 #include 'json'
 ```
 Dependencies:
-* none
+* `string.axi`
 
 ---
 

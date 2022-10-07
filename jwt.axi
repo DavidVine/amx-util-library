@@ -36,9 +36,9 @@ program_name='jwt'
 #define __JWT__
 
 
-#include 'json.axi'
-#include 'base64.axi'
-#include 'hmac.axi'
+#include 'json'
+#include 'base64'
+#include 'hmac'
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

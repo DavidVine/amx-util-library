@@ -31,9 +31,9 @@ program_name='hmac'
 #define __HMAC__
 
 
-#include 'md5.axi'
-#include 'sha1.axi'
-#include 'sha256.axi'
+#include 'md5'
+#include 'sha1'
+#include 'sha256'
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

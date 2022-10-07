@@ -30,7 +30,7 @@ program_name='json-rpc'
 #define __JSON_RPC__
 
 
-#include 'json.axi'
+#include 'json'
 
 
 /*

@@ -234,8 +234,8 @@ program_name='http'
 #define __HTTP__
 
 
-#include 'base64.axi'
-#include 'md5.axi'
+#include 'base64'
+#include 'md5'
 #include 'uri'
 
 

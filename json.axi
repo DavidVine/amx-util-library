@@ -503,6 +503,245 @@ define_function char[JSON_MAX_VALUE_DATA_LENGTH] jsonRemoveWhiteSpace(char jsonS
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
+// Function: jsonValidateNumber
+//
+// Parameters:
+//    char jsonStr[]   -   JSON-encoded string.
+//
+// Returns:
+//    integer   -   Boolean value (1==true | 0 == false) indicating success or failure.
+//
+// Description:
+//    Takes a JSON-encoded string an validates whether it contains a correctly JSON-formatted number
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function integer jsonValidateNumber(char jsonStr[]) {
+
+	stack_var char tempJson[JSON_MAX_VALUE_DATA_LENGTH];
+	stack_var integer numberHasSign
+	stack_var integer i
+
+	if(length_string(jsonStr) == 0) {
+		return false;
+	}
+
+	tempJson = jsonStr;
+
+	removeLeadingChars(tempJson,"' ',$0d,$0a")
+
+	if(length_string(tempJson) == 0) {
+		return false;
+	}
+
+	removeTrailingChars(tempJson,"' ',$0d,$0a")
+	
+	if(length_string(tempJson) == 0) {
+		return false;
+	}
+
+	i=1;
+
+	// process number
+	if(tempJson[i] == '-') {
+		numberHasSign = true
+		i++;
+	}
+
+	if(i>length_string(tempJson)) {
+		return false;
+	}
+
+	if(tempJson[i] == '0') {
+		i++;
+	}
+	else if(find_string('123456789',"tempJson[i]",1)) {
+		i++;
+		while((i<=length_string(tempJson)) && find_string('0123456789',"tempJson[i]",1)) {
+			i++;
+		}
+	}
+	else {
+		return false;
+	}
+	
+	if(i>length_string(tempJson)) {
+		return true;
+	}
+
+	// process fraction
+	if(tempJson[i] == '.') {
+		stack_var integer foundDigit
+
+		i++;
+		while((i<=length_string(tempJson)) && find_string('0123456789',"tempJson[i]",1)) {
+			foundDigit = true
+			i++;
+		}
+
+		if(!foundDigit) {
+			return false
+		}
+
+		if(i>length_string(tempJson)) {
+			return true;
+		}
+	}
+
+	// process exponent
+	if(find_string('eE',"tempJson[i]",1)) {
+		stack_var integer exponentHasSign
+		stack_var integer foundDigit
+
+		i++;
+
+		if(i>length_string(tempJson)) {
+			return false;
+		}
+
+		if(find_string('-+',"tempJson[i]",1)) {
+			i++;
+
+			if(i>length_string(tempJson)) {
+				return false;
+			}
+		}
+
+		while((i<=length_string(tempJson)) && find_string('0123456789',"tempJson[i]",1)) {
+			foundDigit = true
+			i++;
+		}
+		
+		if(!foundDigit) {
+			return false
+		}
+
+		if(i>length_string(tempJson)) {
+			return true;
+		}
+		
+	}
+	else {
+		return false;
+	}
+
+	return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: jsonParse
+//
+// Parameters:
+//    char jsonStr[]     -   JSON-encoded string.
+//    JsonToken jToken   -   JSON array.
+//
+// Returns:
+//    integer   -   Boolean value (1==true | 0 == false) indicating success or failure.
+//
+// Description:
+//    Parses stringified JSON and, if successful, assigns the result to the JsonToken parameter 
+//   (pass-by-reference). If operation is successful returns true, otherwise returns false.
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function integer jsonParse(char jsonStr[], JsonToken jToken) {
+	stack_var JsonObj jObj;
+	stack_var JsonArray jArr;
+	char tempJson[JSON_MAX_VALUE_DATA_LENGTH];
+
+	AMX_LOG(AMX_DEBUG,"'json::jsonParse:jsonStr: ',jsonStr");
+
+	if(length_string(jsonStr) == 0) {
+		return false;
+	}
+
+	tempJson = jsonStr;
+
+	removeLeadingChars(tempJson,"' ',$0d,$0a")
+
+	if(length_string(tempJson) == 0) {
+		return false;
+	}
+
+	removeTrailingChars(tempJson,"' ',$0d,$0a")
+	
+	if(length_string(tempJson) == 0) {
+		return false;
+	}
+
+	if(tempJson == 'null') {
+		jToken.type = JSON_TYPE_NULL
+		jToken.value = tempJson
+		AMX_LOG(AMX_DEBUG,"'json::jsonParse:type: ',jToken.type,',value: ',jToken.value");
+		return true
+	}
+
+	else if(tempJson == 'false' || tempJson == 'true') {
+		jToken.type = JSON_TYPE_BOOLEAN
+		jToken.value = tempJson
+		AMX_LOG(AMX_DEBUG,"'json::jsonParse:type: ',jToken.type,',value: ',jToken.value");
+		return true
+	}
+
+	else if(tempJson[1] == '"') { // string
+			stack_var integer foundClosingQuote;
+			stack_var integer i;
+
+			i=2;
+			while(i<=length_string(tempJson)) {
+				if((tempJson[i] == '"') && (tempJson[i-1] != '\')) {
+					if(i != length_string(tempJson)) {
+						AMX_LOG(AMX_DEBUG,'json::jsonParse:Invalid JSON - closing " followed by more data');
+						return false;
+					}
+					else {
+						foundClosingQuote = true;
+						jToken.type = JSON_TYPE_STRING;
+						jToken.value = mid_string(tempJson,2,i-2);
+						AMX_LOG(AMX_DEBUG,"'json::jsonParse:type: ',jToken.type,',value: ',jToken.value");
+						return true;
+					}
+				}
+				i++;
+			}
+			
+			if(!foundClosingQuote) {
+				AMX_LOG(AMX_DEBUG,'json::jsonParse:Invalid JSON - no closing "');
+				return false;
+			}
+	}
+
+	else if(find_string('-0123456789',"tempJson[1]",1)){ // number
+
+		if(jsonValidateNumber(tempJson)) {
+			jToken.type = JSON_TYPE_NUMBER;
+			jToken.value = tempJson;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	else if(jsonParseObject(tempJson, jObj)) {	// attempt to parse JsonObject
+		jToken.type = JSON_TYPE_OBJECT
+		jToken.value = tempJson
+		AMX_LOG(AMX_DEBUG,"'json::jsonParse:type: ',jToken.type,',value: ',jToken.value");
+		return true;
+	}
+
+	else if(jsonParseArray(tempJson, jArr)) { // attempt to parse JsonArray
+		jToken.type = JSON_TYPE_ARRAY
+		jToken.value = tempJson
+		AMX_LOG(AMX_DEBUG,"'json::jsonParse:type: ',jToken.type,',value: ',jToken.value");
+		return true;
+	}
+
+	AMX_LOG(AMX_DEBUG,"'json::jsonParse:Invalid JSON - unknown type'");
+	return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
 // Function: jsonParseArray
 //
 // Parameters:

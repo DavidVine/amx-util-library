@@ -51,6 +51,68 @@ char NAK = $21;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
+// Function: removeLeadingChars
+//
+// Parameters:
+//  	char str[]  - String to remove leading characters from
+//  	char mask[] - Character mask
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Removes any leading characters listed in the character mask from the string. Order of characters in character mask
+//    is not important.
+//    E.g:
+//      sAlphabet = 'abcdefghijlkmnopqrstuvwxyz'
+//      removeTrailingChars(sAlphabet,'abc')	// alphabet is now 'defghijlkmnopqrstuvwxyz'
+//    E.g:
+//      sAlphabet = 'abcdefghijlkmnopqrstuvwxyz'
+//      removeTrailingChars(sAlphabet,'bac')	// alphabet is now 'defghijlkmnopqrstuvwxyz'
+//    E.g:
+//      sAlphabet = 'aaabbbcccdddeeefffggg'
+//      removeTrailingChars(sAlphabet,'ba')	// alphabet is now 'cccdddeeefffggg'
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function removeLeadingChars(char str[], char mask[]) {
+	while(find_string(mask,"str[1]",1)) {
+		str = right_string(str,length_string(str)-1);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Function: removeTrailingChars
+//
+// Parameters:
+//  	char str[]  - String to remove trailing characters from
+//  	char mask[] - Character mask
+//
+// Returns:
+//    nothing
+//
+// Description:
+//    Removes any trailing characters listed in the character mask from the string. Order of characters in character mask
+//    is not important.
+//    E.g:
+//      sAlphabet = 'abcdefghijlkmnopqrstuvwxyz'
+//      removeTrailingChars(sAlphabet,'xyz')	// alphabet is now 'abcdefghijlkmnopqrstuvw'
+//    E.g:
+//      sAlphabet = 'abcdefghijlkmnopqrstuvwxyz'
+//      removeTrailingChars(sAlphabet,'zxy')	// alphabet is now 'abcdefghijlkmnopqrstuvw'
+//    E.g:
+//      sAlphabet = 'aaabbbcccdddeeefffggg'
+//      removeTrailingChars(sAlphabet,'fg')	// alphabet is now 'aaabbbcccdddeee'
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+define_function removeTrailingChars(char str[], char mask[]) {
+	while(find_string(mask,"str[length_string(str)]",1)) {
+		str = left_string(str,length_string(str)-1);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
 // Function: trim_string
 //
 // Parameters:

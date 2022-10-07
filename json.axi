@@ -24,10 +24,240 @@ program_name='json'
 //
 //          #include 'json'
 //
+// Usage:
+//
+//    - There are 4 x structures defined for working with JSON:
+//
+//        JsonToken
+//
+//            - The JsonToken structure is used to store a JSON token using the .type and .value fields.
+//
+//            - The type of the value can be array,  boolean,  null,  number, object, string. Types are defined in the
+//              following string constants:
+//
+//                JSON_TYPE_ARRAY
+//                JSON_TYPE_BOOLEAN
+//                JSON_TYPE_NULL
+//                JSON_TYPE_NUMBER
+//                JSON_TYPE_OBJECT
+//                JSON_TYPE_STRING
+//
+//            - The value is always stored in string (CHAR []) format even though the type may not necessarily be a 
+//              string. When working with JsonTokens resulting fom parsing stringified JSON data the .type field should
+//              be inspected and then the .value field handled appropriately.
+//
+//        JsonPair
+//
+//            - The JsonPair structure is used to store a JSON pair using the .name and .token fields.
+//
+//            - The name of the pair is a string (CHAR []) value.
+//
+//            - The token is a JsonToken which will define the type and value of the data.
+//
+//        JsonObj
+//
+//            - The JsonObj structure is used to store a JSON object which is essentially a list of pairs (JsonPair) 
+//              which can be accessed via the .pairs field. Although the list of pairs is stored in a JsonPair array it
+//              is important to understand that this is not the same as a JSON array and should not be treated as such.
+//
+//        JsonArray
+//
+//            - The JsonArray structure is used to store an array of tokens (JsonToken) which can be indexed via the 
+//              .elements field. The elements of the array are not named but as the elements are tokens they themselves
+//              may contain arraya, booleans, nulls, numbers, objects, or strings.
+//
+//    - A warning on memory usage: 
+//
+//         NetLinx is a static-memory allocation language meaning that the memory allocation of a variable cannot grow or 
+//         shrink dynamically. Because it is unknown how large the stringified JSON may be a large memory value (65535 bytes 
+//         or 63.9KB) was chosen for the max size of storing JSON data in the .value field of a JsonToken. A JsonArray 
+//         contains an array of JsonToken elements (100 by default) so a single JsonArray will consume a minimum of 6553500 
+//         bytes (6399.9KB or 6.25MB). A JsonPair contains a JsonToken and a JsonObj contains an array of JsonPair elements 
+//         (100 by default) so a single JsonObj will also consume at least 6.35MB by default.
+//
+//         Because of this large memory consumption any globally defined JsonObj or JsonArray variables should be explicitly
+//         defined in volatile memory which is far more plentiful than non-volatile memory. NX-series processors only have 1MB
+//         non-volatile memory but 512MB volatile memory (1GB volatile memory on the NX-4200), e.g:
+//
+//            define_variable
+//
+//            volatile JsonObj jObj
+//            volatile JsonArr jArr
+//
+//         Note that the default values can be edited by modifying the following constant values:
+//
+//            integer JSON_MAX_VALUE_NAME_LENGTH  = 200;
+//            integer JSON_MAX_VALUE_DATA_LENGTH = 65535;
+//            integer JSON_MAX_OBJECT_VALUES = 100;
+//            integer JSON_MAX_ARRAY_VALUES = 100;
+//
+//    - The jsonParseArray and jsonParseObject functions can be used to parse stringified JSON into JSON-type
+//      structures.
+//
+//    - You can extract a single property from stringified JSON using the jsonGet function.
+//
+//    - Once JSON data has been stored in JSON-type NetLinx structures it can be interrogated using numerous functions
+//      such as:
+//
+//        jsonObjHasOwnProperty
+//        jsonObjGet
+//        jsonObjGetType
+//        jsonArrayGet
+//        jsonObjGetValues
+//        jsonObjGetTypes
+//        jsonObjGetNames
+//        jsonArrayGetValues
+//        jsonArrayGetTypes
+//        
+//    - The jsonStringifyValue, jsonStringifyArray, and jsonStringifyObject functions can be used to stringify 
+//      JSON-type NetLinx structures.
+//
+//    - If you have stringified JSON that you know to be an object you can use the jsonParseObject function to parse 
+//      the stringified JSON and store it in a JsonObj structure:
+//
+//    E.g:
+//
+//        char stringifiedJson[200];
+//        JsonObj jObj;
+//
+//        stringifiedJson = '{"first":"one","second":2,"third":[1,2,3],"fourth":[{"firstInner":"1stIn","secondInner":22},null,false]}'
+//
+//        if(jsonParseObject(stringifiedJson, jObj)) {
+//            // parse was successful, jObj contains a list of JSON pairs
+//        }
+//        else {
+//            // parse was not successful - check debug messages for reason
+//        }
+//
+//    - If you have stringified JSON that you know to be an array you can use the jsonParseArray function to parse 
+//      the stringified JSON and store it in a JsonArray structure:
+//
+//    E.g:
+//
+//        char stringifiedJson[200];
+//        JsonArray jArr;
+//
+//        stringifiedJson = '["hello",123,true,null,-5.4,{"first":"1st","second":2}]'
+//        
+//        if(jsonParseArray(stringifiedJson, jArr)) {
+//            // parse was successful, jArr contains list of JSON tokens
+//        }
+//        else {
+//            // parse was not successful - check debug messages for reason
+//        }
+//
+//    - To query if a JSON object for a pair with a matching property name:
+//
+//  integer jsonObjHasOwnProperty(JsonObj jObj, char name[])
+//
+//
+//
+//    - To get the (stringified) value of a named property from a JSON object:
+//
+// char[JSON_MAX_VALUE_DATA_LENGTH] jsonObjGet(JsonObj jObj, char name[])
+//
+//
+//
+//    - To get the type of a named property from a JSON object:
+//
+// char[7] jsonObjGetType(JsonObj jObj, char name[])
+//
+//
+//
+//    - To get an indexed elements' value from a JSON array:
+//
+// integer jsonArrayGet(JsonArray jArray, integer index, JsonToken jToken)
+//
+//
+//
+//    - To get a list of all the (stringified) property values in a JSON obejct:
+//
+// jsonObjGetValues(JsonObj jObj, char values[JSON_MAX_OBJECT_VALUES][])
+//
+//
+//
+//    - To get a list of all the property types in a JSON obect:
+//
+// jsonObjGetTypes(JsonObj jObj, char types[JSON_MAX_OBJECT_VALUES][])
+//
+//
+//
+//    - To get a list of all the property names in a JSON object:
+//
+// jsonObjGetNames(JsonObj jObj, char names[JSON_MAX_OBJECT_VALUES][])
+//
+//
+//
+//    - To get a list of all the (stringified) values in a JSON object
+//
+// jsonArrayGetValues(JsonArray jArr, char values[JSON_MAX_OBJECT_VALUES][])
+//
+//
+//
+//    - To get a list of all the types in a JSON array
+//
+// jsonArrayGetTypes(JsonArray jArr, char types[JSON_MAX_OBJECT_VALUES][])
+//
+//
+//
+//    - To stringify a JSON token of any type:
+//
+// char[JSON_MAX_VALUE_DATA_LENGTH] jsonStringifyValue(JsonToken jToken)
+//
+//
+//
+//    -  To stringify a JSON array:
+//
+// char[JSON_MAX_VALUE_DATA_LENGTH] jsonStringifyArray(JsonArray jArr)
+//
+//
+//
+//    - To stringify a JSON object:
+//
+// char[JSON_MAX_VALUE_DATA_LENGTH] jsonStringifyObject(JsonObj jObj)
+//
+//
+//
+//    - To remove excess whitespace from stringified JSON:
+//
+// char[JSON_MAX_VALUE_DATA_LENGTH] jsonRemoveWhiteSpace(char jsonStr[])
+//
+//
+//
+//    - 
+//
+// char[50] jsonGet(char jsonSerialized[], char property[], JsonToken jToken)
+//
+//
+//
+//    - To escape any data within stringified JSON that needs escaping:
+//
+// char[2048] jsonEscape(char unescaped[])
+//
+//
+//
+//    - To unescape any escaped data with stringified JSON:
+//
+// char[2048] jsonUnescape(char escaped[])
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if_not_defined __JSON__
 #define __JSON__
+
+
+#include 'string'
 
 
 define_constant

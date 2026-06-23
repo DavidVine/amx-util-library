@@ -158,20 +158,8 @@ define_function slong daysSinceEpoch() {
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function integer isLeapYear(integer year) {
-	if((year % 4) == 0) {
-		return false;
-	}
-	else if((year % 100) == 0) {
-		if((year % 400) == 0) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-	else {
-		return true;
-	}
+	return ((year % 4 == 0) && (year % 100 != 0)) ||
+		(year % 400 == 0);
 }
 
 

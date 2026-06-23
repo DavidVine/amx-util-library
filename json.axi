@@ -1528,8 +1528,8 @@ define_function char[2048] jsonEscape(char unescaped[])
             case JSON_UNESCAPED_NEWLINE:         {escaped = "escaped,JSON_ESCAPED_NEWLINE";}
             case JSON_UNESCAPED_FORM_FEED:       {escaped = "escaped,JSON_ESCAPED_FORM_FEED";}
             case JSON_UNESCAPED_CARRIAGE_RETURN: {escaped = "escaped,JSON_ESCAPED_CARRIAGE_RETURN";}
-            case JSON_UNESCAPED_DOUBLE_QUOTE:    {escaped = "escaped,JSON_ESCAPED_BACKSLASH";}
-            case JSON_UNESCAPED_BACKSLASH:       {escaped = "escaped,JSON_ESCAPED_DOUBLE_QUOTE";}
+            case JSON_UNESCAPED_DOUBLE_QUOTE:    {escaped = "escaped,JSON_ESCAPED_DOUBLE_QUOTE";}
+            case JSON_UNESCAPED_BACKSLASH:       {escaped = "escaped,JSON_ESCAPED_BACKSLASH";}
             default:
 			{
 				if((unescaped[c] < $20) || (unescaped[c] > $7E)) // unprintable ASCII character

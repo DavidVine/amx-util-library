@@ -38,7 +38,7 @@ char CRLF[] = {CR,LF};
 char SPACE = ' ';
 char TABH = $09;
 char TABV = $11;
-char ESC = $27;
+char ESC = $1B;
 char NULL = $00;
 char SOH = $01;
 char STX = $02;
@@ -46,7 +46,7 @@ char ETX = $03;
 char EOT = $04;
 char ACK = $06;
 char BS = $08;
-char NAK = $21;
+char NAK = $15;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

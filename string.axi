@@ -251,7 +251,7 @@ define_function append_string(char str[], char append[]) {
 // 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 define_function insert_string(char str[], integer index, char insert[]) {
-	if((index = 0) || (index == 1))
+	if((index == 0) || (index == 1))
 		str = "insert,str";
 	else if (index > length_string(str))
 		str = "str,insert";

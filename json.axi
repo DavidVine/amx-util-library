@@ -485,7 +485,7 @@ define_function jsonObjGetTypes(JsonObj jObj, char types[JSON_MAX_OBJECT_VALUES]
 	integer i;
 	
 	for(i=1; i<=length_array(jObj.pairs); i++) {
-		types[i] = jObj.pairs[i].token.value;
+		types[i] = jObj.pairs[i].token.type;
 	}
 	set_length_array(types,i-1);
 }

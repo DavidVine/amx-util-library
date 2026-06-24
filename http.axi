@@ -548,7 +548,7 @@ define_function integer httpParseResponse(HttpResponse response, char buffer[]) 
 		contentLength = atoi(values[1]);
 		
 		if(length_array(workingBuffer)<contentLength) {
-			AMX_LOG(AMX_ERROR,"'http-alt::httpParseResponse...returning(false) - buffer does not contain enough data'");
+			AMX_LOG(AMX_DEBUG,"'http-alt::httpParseResponse...returning(false) - buffer does not contain enough data'");
 			return false;
 		}
 		
